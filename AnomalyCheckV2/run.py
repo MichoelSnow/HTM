@@ -30,7 +30,7 @@ import os
 import getpass
 os.environ["USER"] = getpass.getuser()
 from nupic.data.inference_shifter import InferenceShifter
-from nupic.frameworks.opf.modelfactory import ModelFactory
+from nupic.frameworks.opf.model_factory import ModelFactory
 
 import nupic_anomaly_output
 

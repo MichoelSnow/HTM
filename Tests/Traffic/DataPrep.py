@@ -57,6 +57,11 @@ MainGraph.xaxis.set_major_formatter(dateFormatter)
 TrffcById_20T = TrffcById.resample('20T').mean()
 TrffcById_20T_v2 = TrffcById_20T.dropna(axis = 0, how=  'all')
 
+TrffcById_3H = TrffcById.resample('4H').mean()
+MainGraph = TrffcById_3H.plot(x = 'dates', y='Speed')
+dateFormatter = DateFormatter('%m/%d')
+MainGraph.xaxis.set_major_formatter(dateFormatter)
+
 MainGraph = TrffcById_20T.plot(x = 'dates', y='Speed')
 dateFormatter = DateFormatter('%m/%d')
 MainGraph.xaxis.set_major_formatter(dateFormatter)
@@ -78,8 +83,8 @@ TrffcByIdSml_csv = pd.concat([line, TrffcByIdSml])
 TrffcByIdSml_csv.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\Traffic\\2016_Sml.csv', index=True)
 
 
-
-
+TrffcById_20T_csv = pd.concat([line, TrffcById_20T_v2])
+TrffcById_20T_csv.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\Traffic\\2016_Sml_20T.csv', index=True)
 
 
 

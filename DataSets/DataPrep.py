@@ -9,7 +9,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib.dates import date2num, DateFormatter
-
+import os, os.path
+import glob 
 
 def lookup(s):
     """
@@ -20,6 +21,31 @@ def lookup(s):
     """
     dates = {date:pd.to_datetime(date) for date in s.unique()}
     return s.map(dates)
+# %% 
+# NYC DOH Hospital Inpatient Discharges 2012
+
+Dischrg = pd.read_csv('E:\MyDocuments\HTM\DataSets\NYSDOH_HospitalInpatientDischarges_SPARCS_De-Identified_2012.csv')
+
+Dischrg = Dischrg['']
+
+# %%
+# MTA Turnstile information
+
+DataDir = 'E:\\MyDocuments\\HTM\\DataSets\\MTA\\'
+DataList = glob.glob1(DataDir, "*.txt")
+DataList.sort()
+for Ct,Nm in enumerate(DataList):
+    CsvPth = "%s%s" % (DataDir, Nm)
+    tmp = pd.read_csv(CsvPth)
+    try:
+        Trnstl = pd.concat([tmp,Trnstl])
+    except:
+        Trnstl = tmp
+    
+#Trnstl = pd.read_csv('E:\\MyDocuments\\HTM\\DataSets\\turnstile_170204.txt')
+
+
+
 # %%
 #TrffcAp = pd.read_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\Traffic\\april2017.csv', na_values="") 
 #TrffcMr = pd.read_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\Traffic\\march2017.csv', na_values="") 

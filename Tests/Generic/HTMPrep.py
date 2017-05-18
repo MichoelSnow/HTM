@@ -15,24 +15,38 @@ import pandas as pd
 import re
 
 
-StrRpl = ['VariableNm','VariableMinVal','VariableMaxVal']
+ParamStrRpl = ['VariableNm','VariableMinVal','VariableMaxVal']
 
-def EditParams(INPUT_FILE):
+def EditFiles(INPUT_FILE):
     # Get the new parameters from the csv file
     NewStr = getNewParams(INPUT_FILE)
     # Read in the file
     ParamsFile = '.\model_params\model_params.py'
     with open(ParamsFile, 'r') as file:
-      filedata = file.read()
+      Paramdata = file.read()
     # Replace the target string
-    for pos,OldStr in enumerate(StrRpl):
-        filedata = filedata.replace(OldStr, NewStr[pos])
+    for pos,OldStr in enumerate(ParamStrRpl):
+        Paramdata = Paramdata.replace(OldStr, NewStr[pos])
     
     
-    OUTPUT_FILE = ".\model_params\%s_model_params.py" % INPUT_FILE[:-4]
+    ParamOutput = ".\model_params\%s_model_params.py" % INPUT_FILE[:-4]
     # Write the file out again
-    with open(OUTPUT_FILE, 'w') as file:
-        file.write(filedata)
+    with open(ParamOutput, 'w') as file:
+        file.write(Paramdata)
+        
+    RunFile = 'run_anomaly.py'
+    with open(RunFile, 'r') as file:
+      Rundata = file.read()
+    
+    # Replace the target string
+    Rundata = Rundata.replace('PredFldNm', NewStr[0])
+    
+    
+    RunOutput = "run_anomaly_%s.py" % INPUT_FILE[:-4]
+    # Write the file out again
+    with open(RunOutput, 'w') as file:
+        file.write(Rundata)  
+    
 
         
         
@@ -58,4 +72,4 @@ if __name__ == "__main__":
         INPUT_FILE
     except NameError:
         raise ValueError('Need to enter the name of a csv file as an argument')
-    EditParams(INPUT_FILE)
+    EditFiles(INPUT_FILE)

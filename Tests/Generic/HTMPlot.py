@@ -73,7 +73,7 @@ def PlotData(InputName):
   
     :param InputName: Important for finding model params and input CSV file
     """
-    inputData = "%s/%s.csv" % (DATA_DIR, InputName.replace(" ", "_"))
+    inputData = "%s/%s" % (DATA_DIR, InputName.replace(" ", "_"))
     DataFl = ImportData(inputData) 
     anomalies = extractAnomalyIndices(DataFl['anomaly_likelihood'].tolist())
     #plt.ion()

@@ -61,7 +61,7 @@ def createModel(modelParams):
   :return: OPF Model object
   """
   model = ModelFactory.create(modelParams)
-  model.enableInference({"predictedField": "PredFldNm"})
+  model.enableInference({"predictedField": "EntriesDif"})
   return model
 
 
@@ -115,10 +115,10 @@ def runIoThroughNupic(inputData, model, InputName, plot):
     if (counter % 100 == 0):
       print "Read %i lines..." % counter
     timestamp = datetime.datetime.strptime(row[0], DATE_FORMAT)
-    PredFldNm = float(row[1])
+    EntriesDif = float(row[1])
     result = model.run({
       "timestamp": timestamp,
-      "PredFldNm": PredFldNm 
+      "EntriesDif": EntriesDif 
     })
 
     if plot:
@@ -126,7 +126,7 @@ def runIoThroughNupic(inputData, model, InputName, plot):
 
     prediction = result.inferences["multiStepBestPredictions"][1]
     anomalyScore = result.inferences["anomalyScore"]
-    output.write(timestamp, PredFldNm, prediction, anomalyScore)
+    output.write(timestamp, EntriesDif, prediction, anomalyScore)
 
   inputFile.close()
   output.close()

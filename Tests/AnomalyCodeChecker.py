@@ -8,6 +8,7 @@ Created on Mon May 22 08:32:26 2017
 # Use dir(ObjectNm) to see all attributes of the object ObjectNm
 import os
 import importlib
+import collections
 import getpass
 import datetime
 import csv
@@ -77,7 +78,7 @@ reestimationPeriod=100
 
 iteration = 0
 _distribution = None
-
+historicalScores = collections.deque(maxlen=historicWindowSize)
 
 """
 NOTE: Anomaly likelihood scores are reported at a flat 0.5 for
@@ -132,13 +133,13 @@ for row in csvReader:
     else:
         if ((_distribution is None) or  (iteration % reestimationPeriod == 0)):
             
-            numShiftedOut = max(0, iteration - _historicalScores.maxlen)
+            numShiftedOut = max(0, iteration - historicalScores.maxlen)
             numSkipRecords = min(iteration, 
                                  max(0, learningPeriod - numShiftedOut))
             
             
             _, _, _distribution = estimateAnomalyLikelihoods(
-                    _historicalScores, skipRecords=numSkipRecords)
+                    historicalScores, skipRecords=numSkipRecords)
         
         
         likelihoods, _, _distribution = updateAnomalyLikelihoods(

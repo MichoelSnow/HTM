@@ -9,6 +9,8 @@ Created on Mon May 22 08:32:26 2017
 import os
 import importlib
 import getpass
+import datetime
+import csv
 os.environ["USER"] = getpass.getuser()
 
 
@@ -45,10 +47,28 @@ model.enableInference({"predictedField": "EntriesDif"})
 # %%
 
 DATA_DIR = "."
-inputData = "%s/%s.csv" % (DATA_DIR, INPUT_FILE.replace(" ", "_"))
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+inputData = "%s/%s.csv" % (DATA_DIR, INPUT_FILE.replace(" ", "_"))
+inputFile = open(inputData, "rb")
+csvReader = csv.reader(inputFile)
+# skip header rows
+csvReader.next()
+csvReader.next()
+csvReader.next()
 shifter = InferenceShifter()
 output = nupic_anomaly_output.NuPICFileOutput(INPUT_FILE)
+# %%
+counter = 0
+for row in csvReader:
+    counter += 1
+    timestamp = datetime.datetime.strptime(row[0], DATE_FORMAT)
+    EntriesDif = float(row[1])
+    result = model.run({"timestamp": timestamp,"EntriesDif": EntriesDif})
+    prediction = result.inferences["multiStepBestPredictions"][1]
+    anomalyScore = result.inferences["anomalyScore"]
+    break
+    
 # %%
 
 

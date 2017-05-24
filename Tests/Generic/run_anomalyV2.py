@@ -22,7 +22,7 @@
 Groups together code used for creating a NuPIC model and dealing with IO.
 (This is a component of the One Hot Gym Anomaly Tutorial.)
 """
-import importlib
+
 import sys
 import csv
 import datetime
@@ -53,7 +53,7 @@ MODEL_PARAMS_DIR = "./model_params"
 #DATE_FORMAT = "%m/%d/%y %H:%M"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-# %%
+
 
 
 
@@ -96,7 +96,7 @@ def createModel(InputName):
   return model
 
 
-# %%
+
 
 
 def runIoThroughNupic(inputData, model, InputName, plot):
@@ -145,7 +145,7 @@ def runIoThroughNupic(inputData, model, InputName, plot):
   inputFile.close()
   output.close()
 
-# %%
+
 
 def runModel(InputName, plot=False):
   """

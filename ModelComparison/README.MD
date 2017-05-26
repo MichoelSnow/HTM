@@ -37,6 +37,6 @@ This will produce a python plot which shows the original and predicted values on
 the top plot, and the anomaly score and anomaly likelihood in the bottom plot.
 For the most part you only need to care about the anomaly likelihood and can
 ignore the anomaly score.  The highlighted sections of the top part of the graph
-represent sections in which the anomaly likelihood was at least 0.99.
+represent sections in which the anomaly likelihood was at least 0.999.
 
 ![HTM Plot](https://github.com/mseinstein/HTM/blob/master/ModelComparison/HTMplotExample.png)

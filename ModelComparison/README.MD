@@ -7,7 +7,7 @@ well as visualize their results using python 2.7
 - Prfchck_Fndngs_2H.csv
   - Counts the total number of findings per two hour period in the hospital
 - Trnstl_103_ST_CORONA.csv
- - Counts the total number of people who have entered the 103rd St Corona Plaza
+  - Counts the total number of people who have entered the 103rd St Corona Plaza
   subway station every 4 hours
 
 

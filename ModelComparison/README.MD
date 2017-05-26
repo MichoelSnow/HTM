@@ -3,7 +3,7 @@
 Included here are a selection of csv files and the code needed to run them as
 well as visualize their results using python 2.7
 
-### CSV Files
+## CSV Files
 - Prfchck_Fndngs_2H.csv
   - Counts the total number of findings per two hour period in the hospital
 - Trnstl_103_ST_CORONA.csv
@@ -11,7 +11,7 @@ well as visualize their results using python 2.7
   subway station every 4 hours
 
 
-### HTM Model
+## HTM Model
 The hierarchical temporal memory (HTM) model was developed by numenta to analyze
 predict and detect anaomalies in time series data.  Information about this model
 can be found on their [Github page](https://github.com/numenta/nupic).  To run
@@ -23,12 +23,13 @@ You **DO NOT** need to install nupic to visualize the HTM ouput, but you will
 need to have pandas and matplotlib installed
 
 To run the HTM model on the data, which needs to be in the same format as the two
-privded csv files, you need to call the file in the following way
+privded csv files, you need to call the file as described below.  This will
+output a csv file name `FileName_HTM.csv`.  The outputs of the given csv files
+are included.
 
     python HTM_anomaly.py FileName.csv
 
-This will output a csv file name `FileName_HTM.csv`.  The outputs of the given
-csv files are included.  To visualize the output of the HTM model, call:
+To visualize the output of the HTM model, call:
 
     python HTM_Plot.py FileName_HTM.csv
 

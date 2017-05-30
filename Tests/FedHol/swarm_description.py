@@ -39,7 +39,7 @@ SWARM_DESCRIPTION = {
 	# float - minValue, maxValue
   "includedFields": [
     {
-      "fieldName": "Date",
+      "fieldName": "timestamp",
       "fieldType": "datetime"
     },
     {
@@ -47,7 +47,7 @@ SWARM_DESCRIPTION = {
       "fieldType": "float",
       "maxValue": 24000,
       "minValue": 0
-    }
+    },
     {
       "fieldName": "NxtHol",
       "fieldType": "float",
@@ -84,5 +84,5 @@ SWARM_DESCRIPTION = {
 	# small -> debugging
 	# medium -> usually what you want
 	# large -> long time but slightly better model params than medium
-  "swarmSize": "medium" 
+  "swarmSize": "large" 
 }

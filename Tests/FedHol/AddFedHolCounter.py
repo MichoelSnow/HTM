@@ -39,3 +39,4 @@ Fndng['timestamp'] = Fndng.index
 Fndng = Fndng[['timestamp','Ct','NxtHol']]
 
 Fndng_csv = HTMprep(Fndng,'timestamp','Ct','NxtHol')
+Fndng_csv.to_csv('E:\MyDocuments\GitHub\HTM\Tests\FedHol\Fndng_2H_FedHol.csv',index = False)

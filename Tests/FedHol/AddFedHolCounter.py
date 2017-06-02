@@ -27,7 +27,7 @@ HolCntDwn = []
 HolCt = 0
 NxtHol = HolRng[HolCt]
 for i in Fndng.index:
-    timDif = int((NxtHol - i).days)
+    timDif = int((NxtHol - i).days)+1
     if timDif < 0:
         HolCt+=1
         NxtHol = HolRng[HolCt]
@@ -40,3 +40,4 @@ Fndng = Fndng[['timestamp','Ct','NxtHol']]
 
 Fndng_csv = HTMprep(Fndng,'timestamp','Ct','NxtHol')
 Fndng_csv.to_csv('E:\MyDocuments\GitHub\HTM\Tests\FedHol\Fndng_2H_FedHol.csv',index = False)
+# %%

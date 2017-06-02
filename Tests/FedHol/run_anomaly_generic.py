@@ -38,7 +38,9 @@ from nupic.frameworks.opf.modelfactory import ModelFactory
 #from nupic.frameworks.opf.common_models.cluster_params import (
 #  getScalarMetricWithTimeOfDayAnomalyParams)
 
-import nupic_anomaly_output
+
+sys.path.append('E:\\MyDocuments\\GitHub\\HTM\\Tests\\FedHol\\')
+import output_anomaly_generic
 
 
 DESCRIPTION = (
@@ -97,8 +99,8 @@ def _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData, csvMin,
           encDict[Nm1] = {}
           encDict[Nm1]['type'] = 'DateEncoder'
           encDict[Nm1]['timeOfDay'] = [21,9.49]
-          encDict[Nm1]['fieldname'] = Nm1
-          encDict[Nm1]['name'] = Nm1
+          encDict[Nm1]['fieldname'] = CsvCol[Col]
+          encDict[Nm1]['name'] = CsvCol[Col]
           Nm2 = '%s_dayOfWeek' % (CsvCol[Col])
           encDict[Nm2] = None
           Nm3 = '%s_weekend' % (CsvCol[Col])
@@ -126,7 +128,7 @@ def _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData, csvMin,
 #                        )
 #        encodersDict["c1"]["resolution"] = resolution
 
-# %%
+#
 
 def createModel(InputName):
   """
@@ -185,12 +187,12 @@ def runIoThroughNupic(inputData, model, InputName):
   """
   inputFile = open(inputData, "rb")
   csvReader = csv.reader(inputFile)
-  # skip header rows
-  csvReader.next()
+  # skip header rows     
+  ColNm = csvReader.next()
   csvReader.next()
   csvReader.next()
 
-  output = nupic_anomaly_output.NuPICFileOutput(InputName)
+  output = output_anomaly_generic.NuPICFileOutput(InputName)
 
   counter = 0
   for row in csvReader:
@@ -198,15 +200,20 @@ def runIoThroughNupic(inputData, model, InputName):
     if (counter % 100 == 0):
       print "Read %i lines..." % counter
     timestamp = datetime.datetime.strptime(row[0], DATE_FORMAT)
-    PredFldNm = float(row[1])
-    result = model.run({
-      "c0": timestamp,
-      "c1": PredFldNm 
-    })
+    PredFld = [float(row[Ct]) for Ct in xrange(1,len(ColNm))]
+    ResDict = {ColNm[x] : PredFld[x-1] for x in xrange(1,len(ColNm))}
+    ResDict["timestamp"] = timestamp
+#    [ResDict{ColNm[x]} = PredFld[x] for x in xrange(1,len(ColNm))]
+#    PredFld = float(row[1])
+    result = model.run(ResDict)
+#    result = model.run({
+#      "c0": timestamp,
+#      "c1": PredFldNm 
+#    })
 
     prediction = result.inferences["multiStepBestPredictions"][1]
     anomalyScore = result.inferences["anomalyScore"]
-    output.write(timestamp, PredFldNm, prediction, anomalyScore)
+    output.write(timestamp, PredFld[0], prediction, anomalyScore)
 
   inputFile.close()
   output.close()
@@ -225,15 +232,15 @@ def runModel(InputName):
   inputData = "%s/%s.csv" % (DATA_DIR, InputName.replace(" ", "_"))
   runIoThroughNupic(inputData, model, InputName)
 
-
+# %%
 
 if __name__ == "__main__":
   print DESCRIPTION
   args = sys.argv[1:]  
   if args[0][-4:] == '.csv':
-      INPUT_FILE = args[0][:-4]   
+      InputName = args[0][:-4]   
   try: 
-      INPUT_FILE
+      InputName
   except NameError:
       raise ValueError('Need to enter the name of a csv file as an argument')
-  runModel(INPUT_FILE)
+  runModel(InputName)

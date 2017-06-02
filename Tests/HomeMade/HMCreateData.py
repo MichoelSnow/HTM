@@ -34,12 +34,22 @@ DtDf = DtDf[['timestamp','Ct']]
 DtDf_csv = HTMprep(DtDf,'timestamp','Ct')
 DtDf_csv.to_csv('E:\MyDocuments\GitHub\HTM\Tests\HomeMade\HMdata.csv',index = False)
 
+HolCntDwn = []
+HolCt = 0
+NxtHol = HolRng[HolCt]
+for i in DtDf.timestamp:
+    timDif = int((NxtHol - i).days)+1
+    if timDif < 0:
+        HolCt+=1
+        NxtHol = HolRng[HolCt]
+        timDif = int((NxtHol - i).days)
+    HolCntDwn.append(timDif)
 
 
 
-
-
-
+DtDf['NxtHol'] = HolCntDwn
+DtDfHol_csv = HTMprep2(DtDf,'timestamp','Ct','NxtHol')
+DtDfHol_csv.to_csv('E:\MyDocuments\GitHub\HTM\Tests\HomeMade\HMdata_FedHol.csv',index = False)
 
 
 

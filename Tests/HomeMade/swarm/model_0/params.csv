@@ -1,2 +1,2 @@
-modelParams|clParams|alpha,modelParams|sensorParams|encoders|Ct:n,modelParams|sensorParams|encoders|_classifierInput|n,modelParams|sensorParams|encoders|timestamp_weekend:radius,modelParams|spParams|synPermInactiveDec,modelParams|tpParams|activationThreshold,modelParams|tpParams|minThreshold,modelParams|tpParams|pamLength
-0.056837373184089046,147,267,1,0.03872074359720825,14,11,3
+modelParams|clParams|alpha,modelParams|sensorParams|encoders|Ct:n,modelParams|sensorParams|encoders|_classifierInput|n,modelParams|sensorParams|encoders|timestamp_dayOfWeek:radius,modelParams|sensorParams|encoders|timestamp_timeOfDay:radius,modelParams|spParams|synPermInactiveDec,modelParams|tpParams|activationThreshold,modelParams|tpParams|minThreshold,modelParams|tpParams|pamLength
+0.07881914526394078,501,87,1.039079456319619,1.7163556680815901,0.034721123367837975,16,11,4

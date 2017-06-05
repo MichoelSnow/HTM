@@ -24,6 +24,7 @@ Groups together the code dealing with swarming.
 import os
 import getpass
 import glob
+import sys
 # Sets the current user as the environment variable USER 
 os.environ["USER"] = getpass.getuser()
 # pretty printing for the model_params file
@@ -80,7 +81,7 @@ def writeModelParamsToFile(modelParams, name):
 
 
 # Runs the swarm
-def swarmForBestModelParams(swarmConfig, name, maxWorkers=cpu_count()):
+def swarmForBestModelParams(swarmConfig, name, maxWorkers=cpu_count()-1):
   outputLabel = name
   permWorkDir = os.path.abspath('swarm')
   if not os.path.exists(permWorkDir):
@@ -122,4 +123,6 @@ def swarm(filePath):
 
 if __name__ == "__main__":
   print DESCRIPTION
+  args = sys.argv[1:]
+  INPUT_FILE = args[0]   
   swarm(INPUT_FILE)

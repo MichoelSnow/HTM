@@ -100,7 +100,7 @@ report = [
 # (generated from minimize = "multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=\[1\]:window=1000:field=Ct")
 minimize = "multiStepBestPredictions:multiStep:errorMetric='altMAPE':steps=\[1\]:window=1000:field=Ct"
 
-minParticlesPerSwarm = 5
+minParticlesPerSwarm = 15
 
 inputPredictedField = 'auto'
 
@@ -108,9 +108,9 @@ inputPredictedField = 'auto'
 
 
 
+tryAll3FieldCombinationsWTimestamps = True
 
 
-maxModels = 200
 
 
 

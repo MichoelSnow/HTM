@@ -79,10 +79,10 @@ SWARM_DESCRIPTION = {
     "predictedField": "Ct"
   },
   # Number of rows to swarm over, -1 assumes all rows
-  "iterationCount": -1, 
+  "iterationCount": 1000, 
   # Swarm size tells it how big of aswarm to runs
 	# small -> debugging
 	# medium -> usually what you want
 	# large -> long time but slightly better model params than medium
-  "swarmSize": "medium" 
+  "swarmSize": "large" 
 }

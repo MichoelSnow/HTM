@@ -33,6 +33,7 @@ import pandas as pd
 import numpy as np
 from pkg_resources import resource_stream
 import json
+import importlib
 
 from nupic.frameworks.opf.modelfactory import ModelFactory
 #from nupic.frameworks.opf.common_models.cluster_params import (
@@ -130,6 +131,20 @@ def _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData, csvMin,
 
 #
 
+def getModelParamsFromName(InputName):
+  """
+  Given a gym name, assumes a matching model params python module exists within
+  the model_params directory and attempts to import it.
+  :param gymName: Gym name, used to guess the model params module name.
+  :return: OPF Model params dictionary
+  """
+  importName = "model_params.%s_model_params" % (
+    InputName.replace(" ", "_").replace("-", "_")
+  )
+  importedModelParams = importlib.import_module(importName).MODEL_PARAMS
+  params = {'modelConfig': importedModelParams}
+  return params
+
 def createModel(InputName):
   """
   Given a model params dictionary, create a CLA Model. Automatically enables
@@ -137,27 +152,35 @@ def createModel(InputName):
   :param modelParams: Model params dict
   :return: OPF Model object
   """
-  # Get the new parameters from the csv file
   CsvCol,CsvDataTypes,CsvData,csvMin,csvMax,csvStd = getNewParams(InputName)
-  minResolution = 0.001
-  tmImplementation = "cpp"
-  # Load model parameters and update encoder params
-  if (tmImplementation is "cpp"):
-    paramFileRelativePath = os.path.join(
-      "anomaly_params_random_encoder",
-      "best_single_metric_anomaly_params_cpp.json")
-  elif (tmImplementation is "tm_cpp"):
-    paramFileRelativePath = os.path.join(
-      "anomaly_params_random_encoder",
-      "best_single_metric_anomaly_params_tm_cpp.json")
-  else:
-    raise ValueError("Invalid string for tmImplementation. Try cpp or tm_cpp")
-    
-  with resource_stream(__name__, paramFileRelativePath) as infile:
-    params = json.load(infile)  
-  
-  _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData,
-                            csvMin, csvMax, csvStd, minResolution)
+  # Try to find already existing params file
+  try:
+      params = getModelParamsFromName(InputName)
+      params["inferenceArgs"] = {'inputPredictedField':'auto',
+            'predictionSteps': [1],'predictedField': CsvCol[1]}
+  except:    
+      print 'swarm file not found, using generic values'
+  # Get the new parameters from the csv file
+      minResolution = 0.001
+      tmImplementation = "cpp"
+      # Load model parameters and update encoder params
+      if (tmImplementation is "cpp"):
+        paramFileRelativePath = os.path.join(
+          "anomaly_params_random_encoder",
+          "best_single_metric_anomaly_params_cpp.json")
+      elif (tmImplementation is "tm_cpp"):
+        paramFileRelativePath = os.path.join(
+          "anomaly_params_random_encoder",
+          "best_single_metric_anomaly_params_tm_cpp.json")
+      else:
+        raise ValueError("Invalid string for tmImplementation. \
+                         Try cpp or tm_cpp")
+        
+      with resource_stream(__name__, paramFileRelativePath) as infile:
+        params = json.load(infile)  
+      
+      _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData,
+                                csvMin, csvMax, csvStd, minResolution)
     
 #  params = getScalarMetricWithTimeOfDayAnomalyParams(
 #          metricData=ImportParams[1],
@@ -203,13 +226,8 @@ def runIoThroughNupic(inputData, model, InputName):
     PredFld = [float(row[Ct]) for Ct in xrange(1,len(ColNm))]
     ResDict = {ColNm[x] : PredFld[x-1] for x in xrange(1,len(ColNm))}
     ResDict["timestamp"] = timestamp
-#    [ResDict{ColNm[x]} = PredFld[x] for x in xrange(1,len(ColNm))]
-#    PredFld = float(row[1])
     result = model.run(ResDict)
-#    result = model.run({
-#      "c0": timestamp,
-#      "c1": PredFldNm 
-#    })
+
 
     prediction = result.inferences["multiStepBestPredictions"][1]
     anomalyScore = result.inferences["anomalyScore"]
@@ -219,7 +237,7 @@ def runIoThroughNupic(inputData, model, InputName):
   output.close()
 
 
-
+# %%
 def runModel(InputName):
   """
   Assumes the gynName corresponds to both a like-named model_params file in the

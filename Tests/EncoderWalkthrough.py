@@ -41,8 +41,8 @@ def SE(**kwargs):
     
     @param maxval: Maximum value of the input signal
     
-    @param periodic: if true, then input "wraps around" such the
-        and input must be strictly less than maxval. Default is False
+    @param periodic: if true, then input "wraps around" such that the
+        input must be strictly less than maxval. Default is False
     
     @param n: Total number of bits in the output must be >= w
     
@@ -116,4 +116,9 @@ def RDSE(**kwargs):
 RDSETmp = RDSE(resolution=5, w=3, n=20)
 print RDSETmp.encode(20)
 
+
+def DE(**kwargs):
+    
+    
+    return DateEncoder(**kwargs)
 

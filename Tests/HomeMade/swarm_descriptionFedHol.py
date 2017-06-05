@@ -71,7 +71,7 @@ SWARM_DESCRIPTION = {
   },
 	# type of inference - Multistep, NontemporalMultistep, 
 		# TemporalMultiStep, TemporalAnomaly
-  "inferenceType": "TemporalMultiStep",
+  "inferenceType": "TemporalAnomaly",
   "inferenceArgs": {
 	# number of steps in advance to predict
     "predictionSteps": [1], 

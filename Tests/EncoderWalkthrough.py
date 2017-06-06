@@ -24,7 +24,9 @@ from nupic.encoders.utils import bitsToString
 
 import numpy
 numpy.set_printoptions(threshold=numpy.nan)
-
+from datetime import datetime
+from pandas.tseries.holiday import USFederalHolidayCalendar as FedHol
+# %%
 
 # SCALAR ENCODER
 def SE(**kwargs):
@@ -60,6 +62,11 @@ def SE(**kwargs):
     @param forced: if True, skip some safety checks.  Default is False
     """
     return ScalarEncoder(**kwargs)
+
+
+ScalarEncoder(w=3,minval=-10,maxval=10,periodic=False,resolution=2,forced=True).encode(8)
+ScalarEncoder(w=3,minval=-10,maxval=10,periodic=True,resolution=2,forced=True).encode(9)
+
 
 # SCALAR ENCODER EXAMPLES
 # Encoding the temperature in Farenheit using a single value for every degree
@@ -111,6 +118,10 @@ def RDSE(**kwargs):
     """
     return RandomDistributedScalarEncoder(**kwargs)
 
+A = RDSE(resolution=5, w=3, n=20)
+A.encode(50)
+A.encode(5)
+
 # RANDOM DISTRIBUTED SCALAR ENCODER EXAMPLES
 # Repetition of our ealier temperature example
 RDSETmp = RDSE(resolution=5, w=3, n=20)
@@ -119,6 +130,48 @@ print RDSETmp.encode(20)
 
 def DE(**kwargs):
     
-    
+    """A date encoder encodes a date according to encoding parameters
+    specified in its constructor.
+    The input to a date encoder is a datetime.datetime object. The output
+    is the concatenation of several sub-encodings, each of which encodes
+    a different aspect of the date. Which sub-encodings are present, and
+    details of those sub-encodings, are specified in the DateEncoder
+    constructor.
+
+    Each parameter describes one attribute to encode. By default, the attribute
+    is not encoded.
+
+    season (season of the year; units = day):
+        (int) width of attribute; default radius = 91.5 days (1 season)
+        (tuple)  season[0] = width; season[1] = radius
+
+    dayOfWeek (monday = 0; units = day)
+        (int) width of attribute; default radius = 1 day
+        (tuple) dayOfWeek[0] = width; dayOfWeek[1] = radius
+
+    weekend (boolean: 0, 1)
+        (int) width of attribute
+
+    holiday (boolean: 0, 1)
+        (int) width of attribute
+
+    timeOfday (midnight = 0; units = hour)
+        (int) width of attribute: default radius = 4 hours
+        (tuple) timeOfDay[0] = width; timeOfDay[1] = radius
+
+    customDays TODO: what is it?
+
+    forced (default True) : if True, skip checks for parameters' settings; 
+    see encoders/scalar.py for details
+
+    """   
     return DateEncoder(**kwargs)
+
+DE(weekend=3).encode(datetime.strptime('02/04/17 12:03', '%m/%d/%y %H:%M'))
+
+ENC = DE(season=3).encode(datetime.strptime('01/01/17 12:03', '%m/%d/%y %H:%M'))
+print ENC, len(ENC)
+
+
+
 

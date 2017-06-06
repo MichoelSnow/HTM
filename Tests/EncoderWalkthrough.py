@@ -28,7 +28,9 @@ from datetime import datetime
 from pandas.tseries.holiday import USFederalHolidayCalendar as FedHol
 import pandas as pd
 import sys
-sys.path.append('E:\\MyDocuments\\GitHub\\HTM\\Pkg\\')
+sys.path.append('E:\\MyDocuments\\GitHub\\HTM\\')
+
+from HTMPkg.dateHol import DateEncoder
 # %%
 
 # SCALAR ENCODER
@@ -181,6 +183,7 @@ dt2 = datetime.strptime('01/01/17 01:00', '%m/%d/%y %H:%M')
 HolRng = FedHol.holidays(FedHol(),start = dt1,end = dt2 + pd.Timedelta('365 days'))
 DE(customDays = (3,'mon')).encode(datetime.strptime('06/12/17 12:03', '%m/%d/%y %H:%M'))
 
+dt = pd.to_datetime(datetime.strptime('12/24/17 01:03', '%m/%d/%y %H:%M'))
+DE(holiday = 9).encode(dt)
 
-DE(holiday = 9).encode(datetime.strptime('12/24/17 01:03', '%m/%d/%y %H:%M'))
-
+holtm = FedHol.holidays(FedHol(),start = dt - pd.Timedelta('2 days'), end= dt + pd.Timedelta('2 days') )

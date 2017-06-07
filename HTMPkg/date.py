@@ -26,8 +26,8 @@ import numpy
 from nupic.data import SENTINEL_VALUE_FOR_MISSING_DATA
 from nupic.encoders.base import Encoder
 from nupic.encoders.scalar import ScalarEncoder
-
-
+from pandas.tseries.holiday import USFederalHolidayCalendar as FedHol
+import pandas as pd
 
 class DateEncoder(Encoder):
   """A date encoder encodes a date according to encoding parameters
@@ -249,7 +249,6 @@ class DateEncoder(Encoder):
 
   def getEncodedValues(self, input):
     """ See method description in base.py """
-
     if input == SENTINEL_VALUE_FOR_MISSING_DATA:
       return numpy.array([None])
 
@@ -290,26 +289,53 @@ class DateEncoder(Encoder):
       #  0->1 on the day before the holiday and 1->0 on the day after the holiday.
       # Currently the only holiday we know about is December 25
       # holidays is a list of holidays that occur on a fixed date every year
-      holidays = [(12, 25)]
+
       val = 0
-      for h in holidays:
-        # hdate is midnight on the holiday
-        hdate = datetime.datetime(timetuple.tm_year, h[0], h[1], 0, 0, 0)
-        if input > hdate:
-          diff = input - hdate
-          if diff.days == 0:
-            # return 1 on the holiday itself
-            val = 1
-            break
-          elif diff.days == 1:
-            # ramp smoothly from 1 -> 0 on the next day
-            val = 1.0 - (float(diff.seconds) / (86400))
-            break
-        else:
-          diff = hdate - input
-          if diff.days == 0:
-            # ramp smoothly from 0 -> 1 on the previous day
-            val = 1.0 - (float(diff.seconds) / 86400)
+
+      holidays = FedHol.holidays(FedHol(),start = input - pd.Timedelta('2 days'),
+                              end= input + pd.Timedelta('2 days'))         
+      if len(holidays) > 0:
+          for hdate in holidays:
+            # hdate is midnight on the holiday
+    #        hdate = datetime.datetime(timetuple.tm_year, h[0], h[1], 0, 0, 0)
+            if input > hdate:
+              diff = input - hdate
+              if diff.days == 0:
+                # return 1 on the holiday itself
+                val = 1
+                break
+              elif diff.days == 1:
+                # ramp smoothly from 1 -> 0 on the next day
+                val = 1.0 - (float(diff.seconds) / (86400))
+                break
+            else:
+              diff = hdate - input
+              if diff.days == 0:
+                # ramp smoothly from 0 -> 1 on the previous day
+                val = 1.0 - (float(diff.seconds) / 86400)
+            
+            
+
+#      holidays = [(12, 25)]          
+#      for h in holidays:
+#        # hdate is midnight on the holiday
+#        hdate = datetime.datetime(timetuple.tm_year, h[0], h[1], 0, 0, 0)
+#        if input > hdate:
+#          diff = input - hdate
+#          if diff.days == 0:
+#            # return 1 on the holiday itself
+#            val = 1
+#            break
+#          elif diff.days == 1:
+#            # ramp smoothly from 1 -> 0 on the next day
+#            val = 1.0 - (float(diff.seconds) / (86400))
+#            break
+#        else:
+#          diff = hdate - input
+#          if diff.days == 0:
+#            # ramp smoothly from 0 -> 1 on the previous day
+#            val = 1.0 - (float(diff.seconds) / 86400)
+    
 
       values.append(val)
 

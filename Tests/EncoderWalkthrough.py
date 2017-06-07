@@ -7,7 +7,7 @@ Created on Fri May 05 09:08:38 2017
 
 from nupic.encoders.scalar import ScalarEncoder
 from nupic.encoders.random_distributed_scalar import RandomDistributedScalarEncoder 
-from nupic.encoders.date import DateEncoder
+#from nupic.encoders.date import DateEncoder
 from nupic.encoders.adaptivescalar import AdaptiveScalarEncoder
 from nupic.encoders.logenc import LogEncoder
 from nupic.encoders.category import CategoryEncoder
@@ -28,9 +28,9 @@ from datetime import datetime
 from pandas.tseries.holiday import USFederalHolidayCalendar as FedHol
 import pandas as pd
 import sys
-sys.path.append('E:\\MyDocuments\\GitHub\\HTM\\')
+#sys.path.append('E:\\MyDocuments\\GitHub\\HTM\\')
 
-from HTMPkg.dateHol import DateEncoder
+from HTMPkg.date import DateEncoder
 # %%
 
 # SCALAR ENCODER
@@ -134,7 +134,7 @@ print RDSETmp.encode(20)
 
 
 def DE(**kwargs):
-    
+    return DateEncoder(**kwargs)
     """A date encoder encodes a date according to encoding parameters
     specified in its constructor.
     The input to a date encoder is a datetime.datetime object. The output
@@ -170,7 +170,7 @@ def DE(**kwargs):
     see encoders/scalar.py for details
 
     """   
-    return DateEncoder(**kwargs)
+    
 
 DE(weekend=3).encode(datetime.strptime('02/04/17 12:03', '%m/%d/%y %H:%M'))
 
@@ -183,7 +183,14 @@ dt2 = datetime.strptime('01/01/17 01:00', '%m/%d/%y %H:%M')
 HolRng = FedHol.holidays(FedHol(),start = dt1,end = dt2 + pd.Timedelta('365 days'))
 DE(customDays = (3,'mon')).encode(datetime.strptime('06/12/17 12:03', '%m/%d/%y %H:%M'))
 
-dt = pd.to_datetime(datetime.strptime('12/24/17 01:03', '%m/%d/%y %H:%M'))
-DE(holiday = 9).encode(dt)
+dt = pd.to_datetime(datetime.strptime('12/25/17 01:03', '%m/%d/%y %H:%M'))
+DE(holiday = 9).encode(pddt)
 
-holtm = FedHol.holidays(FedHol(),start = dt - pd.Timedelta('2 days'), end= dt + pd.Timedelta('2 days') )
+holtm = FedHol.holidays(FedHol(),start = pddt - pd.Timedelta('100 days'), end= pddt + pd.Timedelta('100 days') )
+# %%
+pddt = datetime.strptime('12/03/17 10:03', '%m/%d/%y %H:%M')
+holtm = FedHol.holidays(FedHol(),start = pddt - pd.Timedelta('2 days'), end= pddt + pd.Timedelta('2 days') )
+
+DateEncoder(holiday = 9).encode(pddt)
+
+

@@ -78,5 +78,5 @@ SWARM_DESCRIPTION = {
 	# small -> debugging
 	# medium -> usually what you want
 	# large -> long time but slightly better model params than medium
-  "swarmSize": "large" 
+  "swarmSize": "small" 
 }

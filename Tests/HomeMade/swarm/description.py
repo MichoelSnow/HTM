@@ -78,7 +78,7 @@ config = {
     # Model parameter dictionary.
     'modelParams': {
         # The type of inference that this model will perform
-        'inferenceType': 'TemporalMultiStep',
+        'inferenceType': 'TemporalAnomaly',
 
         'sensorParams': {
             # Sensor diagnostic output verbosity control;
@@ -111,23 +111,6 @@ config = {
     'minval': 0,
     'n': 100,
     'name': u'Ct',
-    'type': 'ScalarEncoder',
-    'w': 21},
-  '_classifierInput':     {   'classifierOnly': True,
-    'clipInput': True,
-    'fieldname': u'Ct',
-    'maxval': 6.0,
-    'minval': 0,
-    'n': 100,
-    'name': '_classifierInput',
-    'type': 'ScalarEncoder',
-    'w': 21},
-  u'NxtHol':     {   'clipInput': True,
-    'fieldname': u'NxtHol',
-    'maxval': 100.0,
-    'minval': 0.0,
-    'n': 100,
-    'name': u'NxtHol',
     'type': 'ScalarEncoder',
     'w': 21},
             },
@@ -328,7 +311,7 @@ control = {
   'dataset' : {   u'info': u'Ct',
         u'streams': [   {   u'columns': [u'*'],
                             u'info': u'Fndng Ct',
-                            u'source': u'file://HMdata_FedHol.csv'}],
+                            u'source': u'file://HMdata.csv'}],
         u'version': 1},
 
   # Iteration count: maximum number of iterations.  Each iteration corresponds

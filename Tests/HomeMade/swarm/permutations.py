@@ -60,8 +60,6 @@ permutations = {
   u'timestamp_dayOfWeek': PermuteEncoder(encoderClass='DateEncoder.dayOfWeek', radius=PermuteFloat(1, 6), w=21, fieldName='timestamp', ),
   u'timestamp_weekend': PermuteEncoder(encoderClass='DateEncoder.weekend', radius=PermuteChoices([1]),  w=21, fieldName='timestamp', ),
   u'Ct': PermuteEncoder(maxval=6.0, fieldName='Ct', w=21, clipInput=True, minval=0, encoderClass='ScalarEncoder', n=PermuteInt(22, 521), ),
-  '_classifierInput': dict(maxval=6.0, classifierOnly=True, clipInput=True, minval=0, n=PermuteInt(28, 521), fieldname='Ct', w=21, type='ScalarEncoder', ),
-  u'NxtHol': PermuteEncoder(maxval=100.0, fieldName='NxtHol', w=21, clipInput=True, minval=0.0, encoderClass='ScalarEncoder', n=PermuteInt(22, 521), ),
       },
     },
 

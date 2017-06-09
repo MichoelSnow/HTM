@@ -73,7 +73,7 @@ SWARM_DESCRIPTION = {
     "predictedField": "Ct"
   },
   # Number of rows to swarm over, -1 assumes all rows
-  "iterationCount": 40, 
+  "iterationCount": 100, 
   # Swarm size tells it how big of aswarm to runs
 	# small -> debugging
 	# medium -> usually what you want

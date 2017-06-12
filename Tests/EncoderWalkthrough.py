@@ -68,8 +68,10 @@ def SE(**kwargs):
     """
     return ScalarEncoder(**kwargs)
 
+ScalarEncoder(w=11,minval=1,maxval=100,periodic=False,resolution=1,forced=True).encode(100)
 
-ScalarEncoder(w=3,minval=-10,maxval=10,periodic=False,resolution=2,forced=True).encode(8)
+
+ScalarEncoder(w=3,minval=-10,maxval=10,periodic=False,resolution=1,forced=True).encode(8)
 ScalarEncoder(w=3,minval=-10,maxval=10,periodic=True,resolution=2,forced=True).encode(9)
 
 
@@ -171,6 +173,34 @@ def DE(**kwargs):
 
     """   
     
+DE(weekend=3,season=9,timeOfDay=5).encode(datetime.strptime('04/04/17 12:03', '%m/%d/%y %H:%M'))
+
+ENC = DE(weekend=7,season=11,timeOfDay=7).encode(datetime.strptime('03/04/17 12:00', '%m/%d/%y %H:%M'))
+print ENC,len(ENC)
+
+
+ENC1 = DE(timeOfDay=7).encode(datetime.strptime('03/01/17 12:00', '%m/%d/%y %H:%M'))
+ENC2 = DE(weekend=7).encode(datetime.strptime('03/01/17 12:00', '%m/%d/%y %H:%M'))
+ENC3 = DE(season=11).encode(datetime.strptime('03/01/17 12:00', '%m/%d/%y %H:%M'))
+print ENC1,len(ENC1)
+print ENC2,len(ENC2)
+print ENC3,len(ENC3)
+
+ENC1 = DE(weekend=7).encode(datetime.strptime('03/04/17 12:00', '%m/%d/%y %H:%M'))
+ENC2 = DE(season=11).encode(datetime.strptime('03/04/17 12:00', '%m/%d/%y %H:%M'))
+ENC3 = DE(timeOfDay=7).encode(datetime.strptime('03/04/17 12:00', '%m/%d/%y %H:%M'))
+print ENC1,len(ENC1)
+print ENC2,len(ENC2)
+print ENC3,len(ENC3)
+
+ENC1 = DE(timeOfDay=7).encode(datetime.strptime('12/15/17 23:00', '%m/%d/%y %H:%M'))
+ENC2 = DE(weekend=7).encode(datetime.strptime('12/15/17 23:00', '%m/%d/%y %H:%M'))
+ENC3 = DE(season=11).encode(datetime.strptime('12/15/17 23:00', '%m/%d/%y %H:%M'))
+print ENC1,len(ENC1)
+print ENC2,len(ENC2)
+print ENC3,len(ENC3)
+
+
 
 DE(weekend=3).encode(datetime.strptime('02/04/17 12:03', '%m/%d/%y %H:%M'))
 

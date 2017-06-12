@@ -35,7 +35,7 @@ from nupic.frameworks.opf.expdescriptionhelpers import importBaseDescription
 # the sub-experiment configuration
 config ={
   'aggregationInfo' : {'seconds': 0, 'fields': [], 'months': 0, 'days': 0, 'years': 0, 'hours': 0, 'microseconds': 0, 'weeks': 0, 'minutes': 0, 'milliseconds': 0},
-  'modelParams' : {'sensorParams': {'encoders': {u'timestamp_dayOfWeek': None, u'timestamp_weekend': None, u'timestamp_timeOfDay': {'name': 'timestamp', 'fieldname': 'timestamp', 'timeOfDay': (21, 0.68279827322218412), 'type': 'DateEncoder'}, u'Ct': {'maxval': 6.0, 'name': 'Ct', 'clipInput': True, 'minval': 0, 'n': 50, 'fieldname': 'Ct', 'w': 21, 'type': 'ScalarEncoder'}}}, 'spParams': {'synPermInactiveDec': 0.1}, 'tpParams': {'minThreshold': 9, 'activationThreshold': 13, 'pamLength': 3}, 'clParams': {'alpha': 0.0058355319359189436}},
+  'modelParams' : {'sensorParams': {'encoders': {u'timestamp_dayOfWeek': None, u'timestamp_weekend': {'name': 'timestamp', 'type': 'DateEncoder', 'fieldname': 'timestamp', 'weekend': (21, 1)}, u'timestamp_timeOfDay': None, u'Ct': {'maxval': 6.0, 'name': 'Ct', 'clipInput': True, 'minval': 0, 'n': 121, 'fieldname': 'Ct', 'w': 21, 'type': 'ScalarEncoder'}}}, 'spParams': {'synPermInactiveDec': 0.05015}, 'tpParams': {'minThreshold': 11, 'activationThreshold': 14, 'pamLength': 3}, 'clParams': {'alpha': 0.050050000000000004}},
 
 }
 

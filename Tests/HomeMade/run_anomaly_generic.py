@@ -40,9 +40,9 @@ from nupic.frameworks.opf.modelfactory import ModelFactory
 #  getScalarMetricWithTimeOfDayAnomalyParams)
 
 
-sys.path.append('E:\\MyDocuments\\GitHub\\HTM\\Tests\\FedHol\\')
-import output_anomaly_generic
-
+sys.path.append('E:\\MyDocuments\\GitHub\\HTM\\Tests\\Homemade\\model_params\\')
+from HTMPkg import output_anomaly_generic
+from importName import MODEL_PARAMS
 
 DESCRIPTION = (
   "Starts a NuPIC model from the model params returned by the swarm\n"

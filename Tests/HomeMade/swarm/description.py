@@ -325,7 +325,7 @@ control = {
   # whichever occurs first.
   #
   # iterationCount of -1 = iterate over the entire dataset
-  'iterationCount' : 100,
+  'iterationCount' : -1,
 
 
   # A dictionary containing all the supplementary parameters for inference

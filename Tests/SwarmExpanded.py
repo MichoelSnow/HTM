@@ -964,6 +964,36 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                             print "Generating experiment files in directory: %s..." % (outputDirPath)
                                             descriptionPyPath = os.path.join(outputDirPath, "description.py")
                                             _generateFileFromTemplates([claDescriptionTemplateFile, controlTemplate],descriptionPyPath,tokenReplacements)
+                                                def _generateFileFromTemplates(templateFileNames, outputFilePath,replacementDict):    ### ExpGenerator.py ###
+                                                    """ Generates a file by applying token replacements to the given template file
+                                                    templateFileName: A list of template file names; these files are assumed to be in the same directory as the running ExpGenerator.py script. ExpGenerator will perform the substitution and concanetate the files in the order they are specified
+                                                    outputFilePath: Absolute path of the output file
+                                                    replacementDict:A dictionary of token/replacement pairs"""
+                                                    # Find out where we're running from so we know where to find templates
+                                                    installPath = os.path.dirname(__file__)
+                                                    outputFile = open(outputFilePath, "w")
+                                                    outputLines = []
+                                                    inputLines = []
+                                                    firstFile = True
+                                                    for templateFileName in templateFileNames:
+                                                        # Separate lines from each file by two blank lines.
+                                                        if not firstFile:
+                                                            inputLines.extend([os.linesep]*2)
+                                                        firstFile = False
+                                                        inputFilePath = os.path.join(installPath, templateFileName)
+                                                        inputFile = open(inputFilePath)
+                                                        inputLines.extend(inputFile.readlines())
+                                                        inputFile.close()
+                                                    print "Writing ", len(inputLines), "lines..."
+                                                    for line in inputLines:
+                                                        tempLine = line
+                                                        # Enumerate through each key in replacementDict and replace with value
+                                                        for k, v in replacementDict.iteritems():
+                                                            if v is None:
+                                                                v = "None"
+                                                            tempLine = re.sub(k, v, tempLine)
+                                                        outputFile.write(tempLine)
+                                                    outputFile.close()
                                             permutationsPyPath = os.path.join(outputDirPath, "permutations.py")
                                             if hsVersion == 'v1':
                                                 _generateFileFromTemplates(['permutationsTemplateV1.tpl'],permutationsPyPath,tokenReplacements)
@@ -978,6 +1008,24 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                     return
                         elif options.descriptionFromFile:
                             _handleDescriptionFromFileOption(options.descriptionFromFile, options.outDir, parser.get_usage(), hsVersion=options.version, claDescriptionTemplateFile = options.claDescriptionTemplateFile)
+                                def _handleDescriptionFromFileOption(filename, outDir, usageStr, hsVersion,claDescriptionTemplateFile):    ### ExpGenerator.py ###
+                                    """Parses and validates the --descriptionFromFile option and executes the request
+                                    Parameters:
+                                    -----------------------------------------------------------------------
+                                    filename:   File from which we'll extract description JSON
+                                    outDir:     where to place generated experiment files
+                                    usageStr:   program usage string
+                                    hsVersion:  which version of hypersearch permutations file to generate, can be 'v1' or 'v2'
+                                    claDescriptionTemplateFile: Filename containing the template description
+                                    retval:     nothing """
+                                    try:
+                                        fileHandle = open(filename, 'r')
+                                        JSONStringFromFile = fileHandle.read().splitlines()
+                                        JSONStringFromFile = ''.join(JSONStringFromFile)
+                                    except Exception, e:
+                                        raise _InvalidCommandArgException(_makeUsageErrorStr(("File open failed for --descriptionFromFile: %s\n" + "ARG=<%s>") % (str(e), filename), usageStr))
+                                      _handleDescriptionOption(JSONStringFromFile, outDir, usageStr,hsVersion=hsVersion,claDescriptionTemplateFile = claDescriptionTemplateFile)
+                                    return
                         else:
                             raise _InvalidCommandArgException(_makeUsageErrorStr("Error in validating command options. No option provided:\n", parser.get_usage()))
         options["expDescConfig"] = swarmConfig
@@ -985,7 +1033,12 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
         options["outDir"] = outDir
         options["permWorkDir"] = permWorkDir
         runOptions = _injectDefaultOptions(options)
+            def _injectDefaultOptions(options):    ### permutations_runner.py ###
+                return dict(DEFAULT_OPTIONS, **options)
         _validateOptions(runOptions)
+            def _validateOptions(options):    ### permutations_runner.py ###
+                if "expDescJsonPath" not in options and "expDescConfig" not in options and "permutationsScriptPath" not in options:
+                    raise Exception("Options must contain one of the following: expDescJsonPath, expDescConfig, or permutationsScriptPath.")
         return _runAction(runOptions)
             def _runAction(runOptions):  ### permutations_runner.py ###
                 if not os.path.exists(runOptions["outDir"]):
@@ -996,10 +1049,226 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                 # Print Nupic HyperSearch results from the current or last run
                 if action == "report":
                     returnValue = _HyperSearchRunner.generateReport(options=runOptions, replaceReport=runOptions["replaceReport"], hyperSearchJob=None, metricsKeys=None)
+                        def generateReport(cls,options,replaceReport,hyperSearchJob,metricsKeys):    ### permutations_runner.py ###
+                            """Prints all available results in the given HyperSearch job and emits model information to the permutations report csv.
+                            The job may be completed or still in progress.
+                            Parameters:
+                            ----------------------------------------------------------------------
+                            options:        NupicRunPermutations options dict
+                            replaceReport:  True to replace existing report csv, if any; False to append to existing report csv, if any
+                            hyperSearchJob: _HyperSearchJob instance; if None, will get it from saved jobID, if any
+                            metricsKeys:    sequence of report metrics key names to include in report; if None, will pre-scan all modelInfos to generate a complete list of metrics key names.
+                            retval:         model parameters"""
+                            # Load _HyperSearchJob instance from storage, if not provided
+                            if hyperSearchJob is None:
+                                hyperSearchJob = cls.loadSavedHyperSearchJob(permWorkDir=options["permWorkDir"],outputLabel=options["outputLabel"])
+                            modelIDs = hyperSearchJob.queryModelIDs()
+                            bestModel = None
+                            # If metricsKeys was not provided, pre-scan modelInfos to create the list; this is needed by _ReportCSVWriter Also scan the parameters to generate a list of encoders and search parameters
+                            metricstmp = set()
+                            searchVar = set()
+                            for modelInfo in _iterModels(modelIDs):
+                                if modelInfo.isFinished():
+                                    vars = modelInfo.getParamLabels().keys()
+                                    searchVar.update(vars)
+                                    metrics = modelInfo.getReportMetrics()
+                                    metricstmp.update(metrics.keys())
+                            if metricsKeys is None:
+                                metricsKeys = metricstmp
+                            # Create a csv report writer
+                            reportWriter = _ReportCSVWriter(hyperSearchJob=hyperSearchJob,metricsKeys=metricsKeys,searchVar=searchVar,outputDirAbsPath=options["permWorkDir"],outputLabel=options["outputLabel"],replaceReport=replaceReport)
+                            # Tallies of experiment dispositions
+                            modelStats = _ModelStats()
+                            #numCompletedOther = long(0)
+                            print "\nResults from all experiments:"
+                            print "----------------------------------------------------------------"
+                            # Get common optimization metric info from permutations script
+                            searchParams = hyperSearchJob.getParams()
+                                def getParams(self):    ### permutations_runner.py ###
+                                    """Semi-private method for retrieving the job-specific params
+                                    Parameters:
+                                    ----------------------------------------------------------------------
+                                    retval:  Job params dict corresponding to the JSON params value returned by ClientJobsDAO.jobInfo()"""
+                                    return self.__params
+                            (optimizationMetricKey, maximizeMetric) = (_PermutationUtils.getOptimizationMetricInfo(searchParams))
+                                def getOptimizationMetricInfo(cls, searchJobParams):    ### permutations_runner.py ###
+                                    """Retrives the optimization key name and optimization function.
+                                    Parameters:
+                                    ---------------------------------------------------------
+                                    searchJobParams:
+                                        Parameter for passing as the searchParams arg to Hypersearch constructor.
+                                    retval: (optimizationMetricKey, maximize)
+                                        optimizationMetricKey: which report key to optimize for maximize: True if we should try and maximize the optimizeKey metric. False if we should minimize it."""
+                                    if searchJobParams["hsVersion"] == "v2":
+                                        search = HypersearchV2(searchParams=searchJobParams)
+                                    else:
+                                        raise RuntimeError("Unsupported hypersearch version \"%s\"" % (searchJobParams["hsVersion"]))
+                                    info = search.getOptimizationMetricInfo()
+                                    return info
+                            # Print metrics, while looking for the best model
+                            formatStr = None
+                            # NOTE: we may find additional metrics if HyperSearch is still running
+                            foundMetricsKeySet = set(metricsKeys)
+                            sortedMetricsKeys = []
+                            # pull out best Model from jobs table
+                            jobInfo = _clientJobsDB().jobInfo(hyperSearchJob.getJobID())
+                            # Try to return a decent error message if the job was cancelled for some
+                            # reason.
+                            if jobInfo.cancel == 1:
+                                raise Exception(jobInfo.workerCompletionMsg)
+                            try:
+                                results = json.loads(jobInfo.results)
+                            except Exception, e:
+                                print "json.loads(jobInfo.results) raised an exception.  Here is some info to help with debugging:"
+                                print "jobInfo: ", jobInfo
+                                print "jobInfo.results: ", jobInfo.results
+                                print "EXCEPTION: ", e
+                                raise
+                            bestModelNum = results["bestModel"]
+                            bestModelIterIndex = None
+                            # performance metrics for the entire job
+                            totalWallTime = 0
+                            totalRecords = 0
+                            # At the end, we will sort the models by their score on the optimization metric
+                            scoreModelIDDescList = []
+                            for (i, modelInfo) in enumerate(_iterModels(modelIDs)):
+                                # Output model info to report csv
+                                reportWriter.emit(modelInfo)
+                                # Update job metrics
+                                totalRecords+=modelInfo.getNumRecords()
+                                format = "%Y-%m-%d %H:%M:%S"
+                                startTime = modelInfo.getStartTime()
+                                if modelInfo.isFinished():
+                                    endTime = modelInfo.getEndTime()
+                                    st = datetime.strptime(startTime, format)
+                                    et = datetime.strptime(endTime, format)
+                                    totalWallTime+=(et-st).seconds
+                                # Tabulate experiment dispositions
+                                modelStats.update(modelInfo)
+                                # For convenience
+                                expDesc = modelInfo.getModelDescription()
+                                reportMetrics = modelInfo.getReportMetrics()
+                                optimizationMetrics = modelInfo.getOptimizationMetrics()
+                                if modelInfo.getModelID() == bestModelNum:
+                                    bestModel = modelInfo
+                                    bestModelIterIndex=i
+                                    bestMetric = optimizationMetrics.values()[0]
+                                # Keep track of the best-performing model
+                                if optimizationMetrics:
+                                    assert len(optimizationMetrics) == 1, ("expected 1 opt key, but got %d (%s) in %s" % (len(optimizationMetrics), optimizationMetrics, modelInfo))
+                                # Append to our list of modelIDs and scores
+                                if modelInfo.getCompletionReason().isEOF():
+                                    scoreModelIDDescList.append((optimizationMetrics.values()[0],modelInfo.getModelID(),modelInfo.getGeneratedDescriptionFile(),modelInfo.getParamLabels()))
+                                print "[%d] Experiment %s\n(%s):" % (i, modelInfo, expDesc)
+                                if (modelInfo.isFinished() and not (modelInfo.getCompletionReason().isStopped or modelInfo.getCompletionReason().isEOF())):
+                                    print ">> COMPLETION MESSAGE: %s" % modelInfo.getCompletionMsg()
+                                if reportMetrics:
+                                    # Update our metrics key set and format string
+                                    foundMetricsKeySet.update(reportMetrics.iterkeys())
+                                    if len(sortedMetricsKeys) != len(foundMetricsKeySet):
+                                        sortedMetricsKeys = sorted(foundMetricsKeySet)
+                                        maxKeyLen = max([len(k) for k in sortedMetricsKeys])
+                                        formatStr = "  %%-%ds" % (maxKeyLen+2)
+                                    # Print metrics
+                                    for key in sortedMetricsKeys:
+                                        if key in reportMetrics:
+                                            if key == optimizationMetricKey:
+                                                m = "%r (*)" % reportMetrics[key]
+                                            else:
+                                                m = "%r" % reportMetrics[key]
+                                            print formatStr % (key+":"), m
+                                    print
+                            # Summarize results
+                            print "--------------------------------------------------------------"
+                            if len(modelIDs) > 0:
+                                print "%d experiments total (%s).\n" % (len(modelIDs),("all completed successfully"if (modelStats.numCompletedKilled + modelStats.numCompletedEOF) ==len(modelIDs) else "WARNING: %d models have not completed or there were errors" % (len(modelIDs) - (modelStats.numCompletedKilled + modelStats.numCompletedEOF +modelStats.numCompletedStopped))))
+                                if modelStats.numStatusOther > 0:
+                                    print "ERROR: models with unexpected status: %d" % (modelStats.numStatusOther)
+                                print "WaitingToStart: %d" % modelStats.numStatusWaitingToStart
+                                print "Running: %d" % modelStats.numStatusRunning
+                                print "Completed: %d" % modelStats.numStatusCompleted
+                                if modelStats.numCompletedOther > 0:
+                                    print "    ERROR: models with unexpected completion reason: %d" % (modelStats.numCompletedOther)
+                                print "    ran to EOF: %d" % modelStats.numCompletedEOF
+                                print "    ran to stop signal: %d" % modelStats.numCompletedStopped
+                                print "    were orphaned: %d" % modelStats.numCompletedOrphaned
+                                print "    killed off: %d" % modelStats.numCompletedKilled
+                                print "    failed: %d" % modelStats.numCompletedError
+                                assert modelStats.numStatusOther == 0, "numStatusOther=%s" % (modelStats.numStatusOther)
+                                assert modelStats.numCompletedOther == 0, "numCompletedOther=%s" % (modelStats.numCompletedOther)
+                            else:
+                                print "0 experiments total."
+                            # Print out the field contributions
+                            print
+                            global gCurrentSearch
+                            jobStatus = hyperSearchJob.getJobStatus(gCurrentSearch._workers)
+                            jobResults = jobStatus.getResults()
+                            if "fieldContributions" in jobResults:
+                                print "Field Contributions:"
+                                pprint.pprint(jobResults["fieldContributions"], indent=4)
+                            else:
+                                print "Field contributions info not available"
+                            # Did we have an optimize key?
+                            if bestModel is not None:
+                                maxKeyLen = max([len(k) for k in sortedMetricsKeys])
+                                maxKeyLen = max(maxKeyLen, len(optimizationMetricKey))
+                                formatStr = "  %%-%ds" % (maxKeyLen+2)
+                                bestMetricValue = bestModel.getOptimizationMetrics().values()[0]
+                                optimizationMetricName = bestModel.getOptimizationMetrics().keys()[0]
+                                print
+                                print "Best results on the optimization metric %s (maximize=%s):" % (optimizationMetricName, maximizeMetric)
+                                print "[%d] Experiment %s (%s):" % (bestModelIterIndex, bestModel, bestModel.getModelDescription())
+                                print formatStr % (optimizationMetricName+":"), bestMetricValue
+                                print
+                                print "Total number of Records processed: %d"  % totalRecords
+                                print
+                                print "Total wall time for all models: %d" % totalWallTime
+                                hsJobParams = hyperSearchJob.getParams()
+                            # Were we asked to write out the top N model description files?
+                            if options["genTopNDescriptions"] > 0:
+                                print "\nGenerating description files for top %d models..." % (options["genTopNDescriptions"])
+                                scoreModelIDDescList.sort()
+                                scoreModelIDDescList = scoreModelIDDescList[0:options["genTopNDescriptions"]]
+                                i = -1
+                                for (score, modelID, description, paramLabels) in scoreModelIDDescList:
+                                    i += 1
+                                    outDir = os.path.join(options["permWorkDir"], "model_%d" % (i))
+                                    print "Generating description file for model %s at %s" % (modelID, outDir)
+                                    if not os.path.exists(outDir):
+                                        os.makedirs(outDir)
+                                    # Fix up the location to the base description file.
+                                    # importBaseDescription() chooses the file relative to the calling file.
+                                    # The calling file is in outDir.
+                                    # The base description is in the user-specified "outDir"
+                                    base_description_path = os.path.join(options["outDir"],"description.py")
+                                    base_description_relpath = os.path.relpath(base_description_path,start=outDir)
+                                    description = description.replace("importBaseDescription('base.py', config)","importBaseDescription('%s', config)" % base_description_relpath)
+                                    fd = open(os.path.join(outDir, "description.py"), "wb")
+                                    fd.write(description)
+                                    fd.close()
+                                    # Generate a csv file with the parameter settings in it
+                                    fd = open(os.path.join(outDir, "params.csv"), "wb")
+                                    writer = csv.writer(fd)
+                                    colNames = paramLabels.keys()
+                                    colNames.sort()
+                                    writer.writerow(colNames)
+                                    row = [paramLabels[x] for x in colNames]
+                                    writer.writerow(row)
+                                    fd.close()
+                                    print "Generating model params file..."
+                                    # Generate a model params file alongside the description.py
+                                    mod = imp.load_source("description", os.path.join(outDir,"description.py"))
+                                    model_description = mod.descriptionInterface.getModelDescription()
+                                    fd = open(os.path.join(outDir, "model_params.py"), "wb")
+                                    fd.write("%s\nMODEL_PARAMS = %s" % (getCopyrightHead(),pprint.pformat(model_description)))
+                                    fd.close()
+                                print
+                            reportWriter.finalize()
+                            return model_description
                 # Run HyperSearch
                 elif action in ("run", "dryRun", "pickup"):
                     returnValue = _runHyperSearch(runOptions)
-                        def _runHyperSearch(runOptions):		### permutations_runner.py ###
+                        def _runHyperSearch(runOptions):        ### permutations_runner.py ###
                             global gCurrentSearch
                             # Run HyperSearch
                             startTime = time.time()

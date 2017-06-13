@@ -1,13 +1,18 @@
+swarmConfig ==  swarmDescriptionJson == SWARM_DESCRIPTION
+
+
+
+
 modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWorkers, "overwrite": True},outputLabel=outputLabel,outDir=permWorkDir,permWorkDir=permWorkDir,verbosity=0)
-    def runWithConfig(swarmConfig, options,outDir=None, outputLabel="default",permWorkDir=None, verbosity=1):
+    def runWithConfig(swarmConfig, options,outDir=None, outputLabel="default",permWorkDir=None, verbosity=1): ### permutations_runner.py ###
         global g_currentVerbosityLevel
         g_currentVerbosityLevel = verbosity
         if outDir is None:
             outDir = os.getcwd()
         if permWorkDir is None:
             permWorkDir = os.getcwd()
-        _checkOverwrite(options, outDir)
-            def _checkOverwrite(options, outDir):
+        _checkOverwrite(options, outDir) 
+            def _checkOverwrite(options, outDir): ### permutations_runner.py ###
                 overwrite = options["overwrite"]
                 if not overwrite:
                     for name in ("description.py", "permutations.py"):
@@ -47,15 +52,23 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                         # Process requests
                         if options.showSchema:
                             _handleShowSchemaOption()
-                                def _handleShowSchemaOption():
-                                  """ Displays command schema to stdout and exit program """
-                                  print "\n============== BEGIN INPUT SCHEMA for --description =========>>"
-                                  print(json.dumps(_getExperimentDescriptionSchema(), indent=_INDENT_STEP*2))
-                                  print "\n<<============== END OF INPUT SCHEMA for --description ========"
-                                  return
+                                def _handleShowSchemaOption():  ### ExpGenerator.py ###
+                                    """ Displays command schema to stdout and exit program """
+                                    print "\n============== BEGIN INPUT SCHEMA for --description =========>>"
+                                    print(json.dumps(_getExperimentDescriptionSchema(), indent=_INDENT_STEP*2))
+                                        def _getExperimentDescriptionSchema():      ### ExpGenerator.py ###
+                                            """Returns the experiment description schema. This implementation loads it in from file experimentDescriptionSchema.json.
+                                            Parameters:
+                                            --------------------------------------------------------------------------
+                                            Returns:    returns a dict representing the experiment description schema."""
+                                            installPath = os.path.dirname(os.path.abspath(__file__))
+                                            schemaFilePath = os.path.join(installPath, "experimentDescriptionSchema.json")
+                                            return json.loads(open(schemaFilePath, 'r').read())
+                                    print "\n<<============== END OF INPUT SCHEMA for --description ========"
+                                    return
                         elif options.description:
                             _handleDescriptionOption(options.description, options.outDir, parser.get_usage(), hsVersion=options.version, claDescriptionTemplateFile = options.claDescriptionTemplateFile)
-                                def _handleDescriptionOption(cmdArgStr, outDir, usageStr, hsVersion, claDescriptionTemplateFile):
+                                def _handleDescriptionOption(cmdArgStr, outDir, usageStr, hsVersion, claDescriptionTemplateFile):  ### ExpGenerator.py ###
                                     """ Parses and validates the --description option args and executes the request
                                     Parameters:
                                     -----------------------------------------------------------------------
@@ -72,7 +85,7 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                         raise _InvalidCommandArgException(_makeUsageErrorStr(("JSON arg parsing failed for --description: %s\n" + "ARG=<%s>") % (str(e), cmdArgStr), usageStr))
                                     #print "PARSED JSON ARGS=\n%s" % (json.dumps(args, indent=4))
                                     filesDescription = _generateExperiment(args, outDir, hsVersion=hsVersion, claDescriptionTemplateFile = claDescriptionTemplateFile)
-                                        def _generateExperiment(options, outputDirPath, hsVersion, claDescriptionTemplateFile):
+                                        def _generateExperiment(options, outputDirPath, hsVersion, claDescriptionTemplateFile):  ### ExpGenerator.py ###
                                             """ Executes the --description option, which includes:
                                                 1. Perform provider compatibility checks
                                                 2. Preprocess the training and testing datasets (filter, join providers)
@@ -86,8 +99,7 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                             hsVersion:  which version of hypersearch permutations file to generate, can be 'v1' or 'v2'
                                             claDescriptionTemplateFile: Filename containing the template description
                                             Returns:    on success, returns a dictionary per _experimentResultsJSONSchema; raises exception on error
-                                                Assumption1: input train and test files have identical field metadata
-                                            """
+                                                Assumption1: input train and test files have identical field metadata"""
                                             _gExperimentDescriptionSchema = _getExperimentDescriptionSchema()
                                             # Validate JSON arg using JSON schema validator
                                             try:
@@ -108,6 +120,14 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                             # Get default values
                                             for propertyName in _gExperimentDescriptionSchema['properties']:
                                                 _getPropertyValue(_gExperimentDescriptionSchema, propertyName, options)
+                                                    def _getPropertyValue(schema, propertyName, options):   ### ExpGenerator.py ###
+                                                        """Checks to see if property is specified in 'options'. If not, reads the default value from the schema"""
+                                                        if propertyName not in options:
+                                                            paramsSchema = schema['properties'][propertyName]
+                                                            if 'default' in paramsSchema:
+                                                                options[propertyName] = paramsSchema['default']
+                                                            else:
+                                                                options[propertyName] = None
                                             if options['inferenceArgs'] is not None:
                                                 infArgs = _gExperimentDescriptionSchema['properties']['inferenceArgs']
                                                 for schema in infArgs['type']:
@@ -180,7 +200,7 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                             includedFields = options['includedFields']
                                             if hsVersion == 'v1':
                                                 (encoderSpecsStr, permEncoderChoicesStr) = _generateEncoderStringsV1(includedFields)
-                                                    def _generateEncoderStringsV1(includedFields):
+                                                    def _generateEncoderStringsV1(includedFields):  ### ExpGenerator.py ###
                                                         """ Generate and return the following encoder related substitution variables:
                                                         encoderSpecsStr:
                                                             For the base description file, this string defines the default encoding dicts for each encoder. For example:
@@ -205,6 +225,58 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                                             fieldName = fieldInfo['fieldName']
                                                             # Get the list of encoder choices for this field
                                                             (choicesList, aggFunction) = _generateEncoderChoicesV1(fieldInfo)
+                                                                def _generateEncoderChoicesV1(fieldInfo):  ### ExpGenerator.py ###
+                                                                    """ Return a list of possible encoder parameter combinations for the given field and the default aggregation function to use. Each parameter combination is a dict defining the parameters for the encoder. Here is an example return value for the encoderChoicesList:
+                                                                    [None,{'fieldname':'timestamp','name': 'timestamp_timeOfDay','type':'DateEncoder''dayOfWeek': (7,1)},
+                                                                            {'fieldname':'timestamp','name': 'timestamp_timeOfDay','type':'DateEncoder''dayOfWeek': (7,3)},],
+                                                                    Parameters:
+                                                                    --------------------------------------------------
+                                                                    fieldInfo:      item from the 'includedFields' section of the description JSON object
+                                                                    retval:  (encoderChoicesList, aggFunction)
+                                                                        encoderChoicesList: a list of encoder choice lists for this field. Most fields will generate just 1 encoder choice list. DateTime fields can generate 2 or more encoder choice lists, one for dayOfWeek, one for timeOfDay, etc.
+                                                                        aggFunction: name of aggregation function to use for this field type"""
+                                                                    width = 7
+                                                                    fieldName = fieldInfo['fieldName']
+                                                                    fieldType = fieldInfo['fieldType']
+                                                                    encoderChoicesList = []
+                                                                    # Scalar?
+                                                                    if fieldType in ['float', 'int']:
+                                                                        aggFunction = 'mean'
+                                                                        encoders = [None]
+                                                                        for n in (13, 50, 150, 500):
+                                                                            encoder = dict(type='ScalarSpaceEncoder', name=fieldName, fieldname=fieldName, n=n, w=width, clipInput=True,space="absolute")
+                                                                            if 'minValue' in fieldInfo:
+                                                                                encoder['minval'] = fieldInfo['minValue']
+                                                                            if 'maxValue' in fieldInfo:
+                                                                                encoder['maxval'] = fieldInfo['maxValue']
+                                                                            encoders.append(encoder)
+                                                                        encoderChoicesList.append(encoders)
+                                                                    # String?
+                                                                    elif fieldType == 'string':
+                                                                        aggFunction = 'first'
+                                                                        encoders = [None]
+                                                                        encoder = dict(type='SDRCategoryEncoder', name=fieldName, fieldname=fieldName, n=100, w=width)
+                                                                        encoders.append(encoder)
+                                                                        encoderChoicesList.append(encoders)
+                                                                    # Datetime?
+                                                                    elif fieldType == 'datetime':
+                                                                        aggFunction = 'first'
+                                                                        # First, the time of day representation
+                                                                        encoders = [None]
+                                                                        for radius in (1, 8):
+                                                                            encoder = dict(type='DateEncoder', name='%s_timeOfDay' % (fieldName),fieldname=fieldName, timeOfDay=(width, radius))
+                                                                            encoders.append(encoder)
+                                                                        encoderChoicesList.append(encoders)
+                                                                        # Now, the day of week representation
+                                                                        encoders = [None]
+                                                                        for radius in (1, 3):
+                                                                            encoder = dict(type='DateEncoder', name='%s_dayOfWeek' % (fieldName),fieldname=fieldName, dayOfWeek=(width, radius))
+                                                                            encoders.append(encoder)
+                                                                        encoderChoicesList.append(encoders)
+                                                                    else:
+                                                                        raise RuntimeError("Unsupported field type '%s'" % (fieldType))
+                                                                    # Return results
+                                                                    return (encoderChoicesList, aggFunction)
                                                             encoderChoicesList.extend(choicesList)
                                                         # ------------------------------------------------------------------------
                                                         # Generate the string containing the encoder specs and encoder schema. See the function comments for an example of the encoderSpecsStr and encoderSchemaStr
@@ -227,11 +299,28 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                                             permEncoderChoicesList.append("%s: %s," % (_quoteAndEscape(encoderChoices[-1]['name']),pprint.pformat(encoderChoices, indent=2*_INDENT_STEP)))
                                                         permEncoderChoicesStr = '\n'.join(permEncoderChoicesList)
                                                         permEncoderChoicesStr = _indentLines(permEncoderChoicesStr, 1,indentFirstLine=False)
+                                                            def _indentLines(str, indentLevels = 1, indentFirstLine=True):
+                                                                """ Indent all lines in the given string
+                                                                str:          input string
+                                                                indentLevels: number of levels of indentation to apply
+                                                                indentFirstLine: if False, the 1st line will not be indented
+                                                                Returns:      The result string with all lines indented"""
+                                                                indent = _ONE_INDENT * indentLevels
+                                                                lines = str.splitlines(True)
+                                                                result = ''
+                                                                if len(lines) > 0 and not indentFirstLine:
+                                                                    first = 1
+                                                                    result += lines[0]
+                                                                else:
+                                                                    first = 0
+                                                                for line in lines[first:]:
+                                                                    result += indent + line
+                                                                return result
                                                         # Return results
                                                         return (encoderSpecsStr, permEncoderChoicesStr)
                                             elif hsVersion in ['v2', 'ensemble']:
                                                 (encoderSpecsStr, permEncoderChoicesStr) = _generateEncoderStringsV2(includedFields, options)
-                                                    def _generateEncoderStringsV2(includedFields, options):
+                                                    def _generateEncoderStringsV2(includedFields, options):   ### ExpGenerator.py ###
                                                         """ Generate and return the following encoder related substitution variables:
                                                         encoderSpecsStr:
                                                             For the base description file, this string defines the default encoding dicts for each encoder. For example:
@@ -333,7 +422,7 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                                         #  encoderDictsList and constructorStringList
                                                         encoderSpecsList = []
                                                         permEncoderChoicesList = []
-                                                        for encoderDict in encoderDictsList:                                                        
+                                                        for encoderDict in encoderDictsList:
                                                             if encoderDict['name'].find('\\') >= 0:
                                                                 raise _ExpGeneratorException("Illegal character in field: '\\'")
                                                             # Check for bad characters
@@ -341,7 +430,7 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                                                 if encoderDict['name'].find(c) >= 0:
                                                                     raise _ExpGeneratorException("Illegal character %s in field %r"  %(c, encoderDict['name']))
                                                             constructorStr = _generatePermEncoderStr(options, encoderDict)
-                                                                def _generatePermEncoderStr(options, encoderDict):
+                                                                def _generatePermEncoderStr(options, encoderDict):  ### ExpGenerator.py ###
                                                                     """ Generate the string that defines the permutations to apply for a given encoder. 
                                                                     Parameters:
                                                                     -----------------------------------------------------------------------
@@ -668,8 +757,194 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                                 tokenReplacements['\$PERM_AGGREGATION_CHOICES'] = aggregationInfoStr
                                             # Generate the inferenceArgs replacement tokens
                                             _generateInferenceArgs(options, tokenReplacements)
+                                                def _generateInferenceArgs(options, tokenReplacements):     ### ExpGenerator.py ###
+                                                    """ Generates the token substitutions related to the predicted field and the supplemental arguments for prediction"""
+                                                    inferenceType = options['inferenceType']
+                                                    optionInferenceArgs = options.get('inferenceArgs', None)
+                                                    resultInferenceArgs = {}
+                                                    predictedField = _getPredictedField(options)[0]
+                                                        def _getPredictedField(options):     ### ExpGenerator.py ###
+                                                            """ Gets the predicted field and it's datatype from the options dictionary
+                                                            Returns: (predictedFieldName, predictedFieldType)"""
+                                                            if not options['inferenceArgs'] or not options['inferenceArgs']['predictedField']:
+                                                                return None, None
+                                                            predictedField = options['inferenceArgs']['predictedField']
+                                                            predictedFieldInfo = None
+                                                            includedFields = options['includedFields']
+                                                            for info in includedFields:
+                                                                if info['fieldName'] == predictedField:
+                                                                    predictedFieldInfo = info
+                                                                    break
+                                                            if predictedFieldInfo is None:
+                                                                raise ValueError("Predicted field '%s' does not exist in included fields." % predictedField)
+                                                            predictedFieldType = predictedFieldInfo['fieldType']
+                                                            return predictedField, predictedFieldType
+                                                    if inferenceType in (InferenceType.TemporalNextStep,InferenceType.TemporalAnomaly):
+                                                        assert predictedField,  "Inference Type '%s' needs a predictedField specified in the inferenceArgs dictionary" % inferenceType
+                                                    if optionInferenceArgs:
+                                                        # If we will be using a dynamically created predictionSteps, plug in that variable name in place of the constant scalar value
+                                                        if options['dynamicPredictionSteps']:
+                                                            altOptionInferenceArgs = copy.deepcopy(optionInferenceArgs)
+                                                            altOptionInferenceArgs['predictionSteps'] = '$REPLACE_ME'
+                                                            resultInferenceArgs = pprint.pformat(altOptionInferenceArgs)
+                                                            resultInferenceArgs = resultInferenceArgs.replace("'$REPLACE_ME'",'[predictionSteps]')
+                                                        else:
+                                                            resultInferenceArgs = pprint.pformat(optionInferenceArgs)
+                                                    tokenReplacements['\$INFERENCE_ARGS'] = resultInferenceArgs
+                                                    tokenReplacements['\$PREDICTION_FIELD'] = predictedField
                                             # Generate the metric replacement tokens
                                             _generateMetricsSubstitutions(options, tokenReplacements)
+                                                def _generateMetricsSubstitutions(options, tokenReplacements):     ### ExpGenerator.py ###
+                                                    """Generate the token substitution for metrics related fields.
+                                                    This includes:
+                                                        \$METRICS
+                                                        \$LOGGED_METRICS
+                                                        \$PERM_OPTIMIZE_SETTING"""
+                                                    # -----------------------------------------------------------------------
+                                                    #
+                                                    options['loggedMetrics'] = [".*"]
+                                                    # -----------------------------------------------------------------------
+                                                    # Generate the required metrics
+                                                    metricList, optimizeMetricLabel = _generateMetricSpecs(options)
+                                                        def _generateMetricSpecs(options):     ### ExpGenerator.py ###
+                                                            """ Generates the Metrics for a given InferenceType
+                                                            Parameters:
+                                                            -------------------------------------------------------------------------
+                                                            options: ExpGenerator options
+                                                            retval: (metricsList, optimizeMetricLabel)
+                                                                metricsList: list of metric string names
+                                                                optimizeMetricLabel: Name of the metric which to optimize over"""
+                                                            inferenceType = options['inferenceType']
+                                                            inferenceArgs = options['inferenceArgs']
+                                                            predictionSteps = inferenceArgs['predictionSteps']
+                                                            metricWindow = options['metricWindow']
+                                                            if metricWindow is None:
+                                                                metricWindow = int(Configuration.get("nupic.opf.metricWindow"))
+                                                            metricSpecStrings = []
+                                                            optimizeMetricLabel = ""
+                                                            # -----------------------------------------------------------------------
+                                                            # Generate the metrics specified by the expGenerator paramters
+                                                            metricSpecStrings.extend(_generateExtraMetricSpecs(options))
+                                                                def _generateExtraMetricSpecs(options):     ### ExpGenerator.py ###
+                                                                    """Generates the non-default metrics specified by the expGenerator params """
+                                                                    global _metricSpecSchema
+                                                                    results = []
+                                                                    for metric in options['metrics']:
+                                                                        for propertyName in _metricSpecSchema['properties'].keys():
+                                                                            _getPropertyValue(_metricSpecSchema, propertyName, metric)
+                                                                        specString, label = _generateMetricSpecString(field=metric['field'],metric=metric['metric'],params=metric['params'],inferenceElement=metric['inferenceElement'],returnLabel=True)
+                                                                            def _generateMetricSpecString(inferenceElement, metric,params=None, field=None,returnLabel=False):     ### ExpGenerator.py ###
+                                                                                """ Generates the string representation of a MetricSpec object, and returns the metric key associated with the metric.
+                                                                                Parameters:
+                                                                                -----------------------------------------------------------------------
+                                                                                inferenceElement:An InferenceElement value that indicates which part of the inference thismetric is computed on
+                                                                                metric:The type of the metric being computed (e.g. aae, avg_error)
+                                                                                params:A dictionary of parameters for the metric. The keys are the parameter names and the values should be the parameter values (e.g. window=200)
+                                                                                field:The name of the field for which this metric is being computed
+                                                                                returnLabel:If True, returns the label of the MetricSpec that was generated"""
+                                                                                metricSpecArgs = dict(metric=metric,field=field,params=params,inferenceElement=inferenceElement)
+                                                                                metricSpecAsString = "MetricSpec(%s)" % ', '.join(['%s=%r' % (item[0],item[1])for item in metricSpecArgs.iteritems()])
+                                                                                if not returnLabel:
+                                                                                    return metricSpecAsString
+                                                                                spec = MetricSpec(**metricSpecArgs)
+                                                                                metricLabel = spec.getLabel()
+                                                                                return metricSpecAsString, metricLabel
+                                                                        if metric['logged']:
+                                                                            options['loggedMetrics'].append(label)
+                                                                        results.append(specString)
+                                                                    return results
+                                                            # -----------------------------------------------------------------------
+                                                            optimizeMetricSpec = None
+                                                            # If using a dynamically computed prediction steps (i.e. when swarming over aggregation is requested), then we will plug in the variable predictionSteps in place of the statically provided predictionSteps from the JSON description.
+                                                            if options['dynamicPredictionSteps']:
+                                                                assert len(predictionSteps) == 1
+                                                                predictionSteps = ['$REPLACE_ME']
+                                                            # -----------------------------------------------------------------------
+                                                            # Metrics for temporal prediction
+                                                            if inferenceType in (InferenceType.TemporalNextStep,InferenceType.TemporalAnomaly,InferenceType.TemporalMultiStep,InferenceType.NontemporalMultiStep,InferenceType.NontemporalClassification,'MultiStep'):
+                                                                predictedFieldName, predictedFieldType = _getPredictedField(options)
+                                                                isCategory = _isCategory(predictedFieldType)
+                                                                    def _isCategory(fieldType):    ### ExpGenerator.py ###
+                                                                        """Prediction function for determining whether a function is a categorical variable or a scalar variable.  Mainly used for determining the appropriate metrics."""
+                                                                        if fieldType == 'string':
+                                                                            return True
+                                                                        if fieldType == 'int' or fieldType=='float':
+                                                                            return False
+                                                                metricNames = ('avg_err',) if isCategory else ('aae', 'altMAPE')
+                                                                trivialErrorMetric = 'avg_err' if isCategory else 'altMAPE'
+                                                                oneGramErrorMetric = 'avg_err' if isCategory else 'altMAPE'
+                                                                movingAverageBaselineName = 'moving_mode' if isCategory else 'moving_mean'
+                                                                # Multi-step metrics
+                                                                for metricName in metricNames:
+                                                                    metricSpec, metricLabel = _generateMetricSpecString(field=predictedFieldName,inferenceElement=InferenceElement.multiStepBestPredictions,metric='multiStep',params={'errorMetric': metricName,'window':metricWindow,'steps': predictionSteps},returnLabel=True)
+                                                                    metricSpecStrings.append(metricSpec)
+                                                                # If the custom error metric was specified, add that
+                                                                if options["customErrorMetric"] is not None :
+                                                                    metricParams = dict(options["customErrorMetric"])
+                                                                    metricParams['errorMetric'] = 'custom_error_metric'
+                                                                    metricParams['steps'] = predictionSteps
+                                                                    # If errorWindow is not specified, make it equal to the default window
+                                                                    if not "errorWindow" in metricParams:
+                                                                        metricParams["errorWindow"] = metricWindow
+                                                                    metricSpec, metricLabel =_generateMetricSpecString(field=predictedFieldName,inferenceElement=InferenceElement.multiStepPredictions,metric="multiStep",params=metricParams,returnLabel=True)
+                                                                    metricSpecStrings.append(metricSpec)
+                                                                # If this is the first specified step size, optimize for it. Be sure to escape special characters since this is a regular expression
+                                                                optimizeMetricSpec = metricSpec
+                                                                metricLabel = metricLabel.replace('[', '\\[')
+                                                                metricLabel = metricLabel.replace(']', '\\]')
+                                                                optimizeMetricLabel = metricLabel
+                                                                if options["customErrorMetric"] is not None :
+                                                                    optimizeMetricLabel = ".*custom_error_metric.*"
+                                                                # Add in the trivial metrics
+                                                                if options["runBaselines"] and inferenceType != InferenceType.NontemporalClassification:
+                                                                    for steps in predictionSteps:
+                                                                        metricSpecStrings.append(_generateMetricSpecString(field=predictedFieldName,inferenceElement=InferenceElement.prediction,metric="trivial",params={'window':metricWindow,"errorMetric":trivialErrorMetric,'steps': steps}))
+                                                                        ##Add in the One-Gram baseline error metric
+                                                                        #metricSpecStrings.append(_generateMetricSpecString(field=predictedFieldName,inferenceElement=InferenceElement.encodings,metric="two_gram",params={'window':metricWindow,"errorMetric":oneGramErrorMetric,'predictionField':predictedFieldName,'steps': steps}))
+                                                                        #Include the baseline moving mean/mode metric
+                                                                        if isCategory:
+                                                                            metricSpecStrings.append(_generateMetricSpecString(field=predictedFieldName,inferenceElement=InferenceElement.prediction,metric=movingAverageBaselineName,params={'window':metricWindow,"errorMetric":"avg_err","steps": steps}))
+                                                                        else :
+                                                                            metricSpecStrings.append(_generateMetricSpecString(field=predictedFieldName,inferenceElement=InferenceElement.prediction,metric=movingAverageBaselineName,params={'window':metricWindow,"errorMetric":"altMAPE","mean_window":200,"steps": steps}))
+                                                            # -----------------------------------------------------------------------
+                                                            # Metrics for classification
+                                                            elif inferenceType in (InferenceType.TemporalClassification):
+                                                                metricName = 'avg_err'
+                                                                trivialErrorMetric = 'avg_err'
+                                                                oneGramErrorMetric = 'avg_err'
+                                                                movingAverageBaselineName = 'moving_mode'
+                                                                optimizeMetricSpec, optimizeMetricLabel = _generateMetricSpecString(inferenceElement=InferenceElement.classification,metric=metricName,params={'window':metricWindow},returnLabel=True)
+                                                                metricSpecStrings.append(optimizeMetricSpec)
+                                                                if options["runBaselines"]:
+                                                                    # If temporal, generate the trivial predictor metric
+                                                                    if inferenceType == InferenceType.TemporalClassification:
+                                                                        metricSpecStrings.append(_generateMetricSpecString(inferenceElement=InferenceElement.classification,metric="trivial",params={'window':metricWindow,"errorMetric":trivialErrorMetric}))
+                                                                        metricSpecStrings.append(_generateMetricSpecString(inferenceElement=InferenceElement.classification,metric="two_gram",params={'window':metricWindow,"errorMetric":oneGramErrorMetric}))
+                                                                        metricSpecStrings.append(_generateMetricSpecString(inferenceElement=InferenceElement.classification,metric=movingAverageBaselineName,params={'window':metricWindow,"errorMetric":"avg_err","mode_window":200}))
+                                                                # Custom Error Metric
+                                                                if not options["customErrorMetric"] == None :
+                                                                    #If errorWindow is not specified, make it equal to the default window
+                                                                    if not "errorWindow" in options["customErrorMetric"]:
+                                                                        options["customErrorMetric"]["errorWindow"] = metricWindow
+                                                                    optimizeMetricSpec = _generateMetricSpecString(inferenceElement=InferenceElement.classification,metric="custom",params=options["customErrorMetric"])
+                                                                    optimizeMetricLabel = ".*custom_error_metric.*"  
+                                                                    metricSpecStrings.append(optimizeMetricSpec)
+                                                            # -----------------------------------------------------------------------
+                                                            # If plug in the predictionSteps variable for any dynamically generated prediction steps
+                                                            if options['dynamicPredictionSteps']:
+                                                                for i in range(len(metricSpecStrings)):
+                                                                    metricSpecStrings[i] = metricSpecStrings[i].replace("'$REPLACE_ME'", "predictionSteps")
+                                                                optimizeMetricLabel = optimizeMetricLabel.replace("'$REPLACE_ME'", ".*")
+                                                            return metricSpecStrings, optimizeMetricLabel
+                                                    metricListString = ",\n".join(metricList)
+                                                    metricListString = _indentLines(metricListString, 2, indentFirstLine=False)
+                                                    permOptimizeSettingStr = 'minimize = "%s"' % optimizeMetricLabel
+                                                    # -----------------------------------------------------------------------
+                                                    # Specify which metrics should be logged
+                                                    loggedMetricsListAsStr = "[%s]" % (", ".join(["'%s'"% ptrn for ptrn in options['loggedMetrics']]))
+                                                    tokenReplacements['\$LOGGED_METRICS'] = loggedMetricsListAsStr
+                                                    tokenReplacements['\$METRICS'] = metricListString
+                                                    tokenReplacements['\$PERM_OPTIMIZE_SETTING'] = permOptimizeSettingStr
                                             # -----------------------------------------------------------------------
                                             # Generate Control dictionary
                                             environment = options['environment']
@@ -689,6 +964,36 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                             print "Generating experiment files in directory: %s..." % (outputDirPath)
                                             descriptionPyPath = os.path.join(outputDirPath, "description.py")
                                             _generateFileFromTemplates([claDescriptionTemplateFile, controlTemplate],descriptionPyPath,tokenReplacements)
+                                                def _generateFileFromTemplates(templateFileNames, outputFilePath,replacementDict):    ### ExpGenerator.py ###
+                                                    """ Generates a file by applying token replacements to the given template file
+                                                    templateFileName: A list of template file names; these files are assumed to be in the same directory as the running ExpGenerator.py script. ExpGenerator will perform the substitution and concanetate the files in the order they are specified
+                                                    outputFilePath: Absolute path of the output file
+                                                    replacementDict:A dictionary of token/replacement pairs"""
+                                                    # Find out where we're running from so we know where to find templates
+                                                    installPath = os.path.dirname(__file__)
+                                                    outputFile = open(outputFilePath, "w")
+                                                    outputLines = []
+                                                    inputLines = []
+                                                    firstFile = True
+                                                    for templateFileName in templateFileNames:
+                                                        # Separate lines from each file by two blank lines.
+                                                        if not firstFile:
+                                                            inputLines.extend([os.linesep]*2)
+                                                        firstFile = False
+                                                        inputFilePath = os.path.join(installPath, templateFileName)
+                                                        inputFile = open(inputFilePath)
+                                                        inputLines.extend(inputFile.readlines())
+                                                        inputFile.close()
+                                                    print "Writing ", len(inputLines), "lines..."
+                                                    for line in inputLines:
+                                                        tempLine = line
+                                                        # Enumerate through each key in replacementDict and replace with value
+                                                        for k, v in replacementDict.iteritems():
+                                                            if v is None:
+                                                                v = "None"
+                                                            tempLine = re.sub(k, v, tempLine)
+                                                        outputFile.write(tempLine)
+                                                    outputFile.close()
                                             permutationsPyPath = os.path.join(outputDirPath, "permutations.py")
                                             if hsVersion == 'v1':
                                                 _generateFileFromTemplates(['permutationsTemplateV1.tpl'],permutationsPyPath,tokenReplacements)
@@ -703,6 +1008,24 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                                     return
                         elif options.descriptionFromFile:
                             _handleDescriptionFromFileOption(options.descriptionFromFile, options.outDir, parser.get_usage(), hsVersion=options.version, claDescriptionTemplateFile = options.claDescriptionTemplateFile)
+                                def _handleDescriptionFromFileOption(filename, outDir, usageStr, hsVersion,claDescriptionTemplateFile):    ### ExpGenerator.py ###
+                                    """Parses and validates the --descriptionFromFile option and executes the request
+                                    Parameters:
+                                    -----------------------------------------------------------------------
+                                    filename:   File from which we'll extract description JSON
+                                    outDir:     where to place generated experiment files
+                                    usageStr:   program usage string
+                                    hsVersion:  which version of hypersearch permutations file to generate, can be 'v1' or 'v2'
+                                    claDescriptionTemplateFile: Filename containing the template description
+                                    retval:     nothing """
+                                    try:
+                                        fileHandle = open(filename, 'r')
+                                        JSONStringFromFile = fileHandle.read().splitlines()
+                                        JSONStringFromFile = ''.join(JSONStringFromFile)
+                                    except Exception, e:
+                                        raise _InvalidCommandArgException(_makeUsageErrorStr(("File open failed for --descriptionFromFile: %s\n" + "ARG=<%s>") % (str(e), filename), usageStr))
+                                      _handleDescriptionOption(JSONStringFromFile, outDir, usageStr,hsVersion=hsVersion,claDescriptionTemplateFile = claDescriptionTemplateFile)
+                                    return
                         else:
                             raise _InvalidCommandArgException(_makeUsageErrorStr("Error in validating command options. No option provided:\n", parser.get_usage()))
         options["expDescConfig"] = swarmConfig
@@ -710,9 +1033,14 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
         options["outDir"] = outDir
         options["permWorkDir"] = permWorkDir
         runOptions = _injectDefaultOptions(options)
+            def _injectDefaultOptions(options):    ### permutations_runner.py ###
+                return dict(DEFAULT_OPTIONS, **options)
         _validateOptions(runOptions)
+            def _validateOptions(options):    ### permutations_runner.py ###
+                if "expDescJsonPath" not in options and "expDescConfig" not in options and "permutationsScriptPath" not in options:
+                    raise Exception("Options must contain one of the following: expDescJsonPath, expDescConfig, or permutationsScriptPath.")
         return _runAction(runOptions)
-            def _runAction(runOptions):
+            def _runAction(runOptions):  ### permutations_runner.py ###
                 if not os.path.exists(runOptions["outDir"]):
                     os.makedirs(runOptions["outDir"])
                 if not os.path.exists(runOptions["permWorkDir"]):
@@ -721,10 +1049,226 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                 # Print Nupic HyperSearch results from the current or last run
                 if action == "report":
                     returnValue = _HyperSearchRunner.generateReport(options=runOptions, replaceReport=runOptions["replaceReport"], hyperSearchJob=None, metricsKeys=None)
+                        def generateReport(cls,options,replaceReport,hyperSearchJob,metricsKeys):    ### permutations_runner.py ###
+                            """Prints all available results in the given HyperSearch job and emits model information to the permutations report csv.
+                            The job may be completed or still in progress.
+                            Parameters:
+                            ----------------------------------------------------------------------
+                            options:        NupicRunPermutations options dict
+                            replaceReport:  True to replace existing report csv, if any; False to append to existing report csv, if any
+                            hyperSearchJob: _HyperSearchJob instance; if None, will get it from saved jobID, if any
+                            metricsKeys:    sequence of report metrics key names to include in report; if None, will pre-scan all modelInfos to generate a complete list of metrics key names.
+                            retval:         model parameters"""
+                            # Load _HyperSearchJob instance from storage, if not provided
+                            if hyperSearchJob is None:
+                                hyperSearchJob = cls.loadSavedHyperSearchJob(permWorkDir=options["permWorkDir"],outputLabel=options["outputLabel"])
+                            modelIDs = hyperSearchJob.queryModelIDs()
+                            bestModel = None
+                            # If metricsKeys was not provided, pre-scan modelInfos to create the list; this is needed by _ReportCSVWriter Also scan the parameters to generate a list of encoders and search parameters
+                            metricstmp = set()
+                            searchVar = set()
+                            for modelInfo in _iterModels(modelIDs):
+                                if modelInfo.isFinished():
+                                    vars = modelInfo.getParamLabels().keys()
+                                    searchVar.update(vars)
+                                    metrics = modelInfo.getReportMetrics()
+                                    metricstmp.update(metrics.keys())
+                            if metricsKeys is None:
+                                metricsKeys = metricstmp
+                            # Create a csv report writer
+                            reportWriter = _ReportCSVWriter(hyperSearchJob=hyperSearchJob,metricsKeys=metricsKeys,searchVar=searchVar,outputDirAbsPath=options["permWorkDir"],outputLabel=options["outputLabel"],replaceReport=replaceReport)
+                            # Tallies of experiment dispositions
+                            modelStats = _ModelStats()
+                            #numCompletedOther = long(0)
+                            print "\nResults from all experiments:"
+                            print "----------------------------------------------------------------"
+                            # Get common optimization metric info from permutations script
+                            searchParams = hyperSearchJob.getParams()
+                                def getParams(self):    ### permutations_runner.py ###
+                                    """Semi-private method for retrieving the job-specific params
+                                    Parameters:
+                                    ----------------------------------------------------------------------
+                                    retval:  Job params dict corresponding to the JSON params value returned by ClientJobsDAO.jobInfo()"""
+                                    return self.__params
+                            (optimizationMetricKey, maximizeMetric) = (_PermutationUtils.getOptimizationMetricInfo(searchParams))
+                                def getOptimizationMetricInfo(cls, searchJobParams):    ### permutations_runner.py ###
+                                    """Retrives the optimization key name and optimization function.
+                                    Parameters:
+                                    ---------------------------------------------------------
+                                    searchJobParams:
+                                        Parameter for passing as the searchParams arg to Hypersearch constructor.
+                                    retval: (optimizationMetricKey, maximize)
+                                        optimizationMetricKey: which report key to optimize for maximize: True if we should try and maximize the optimizeKey metric. False if we should minimize it."""
+                                    if searchJobParams["hsVersion"] == "v2":
+                                        search = HypersearchV2(searchParams=searchJobParams)
+                                    else:
+                                        raise RuntimeError("Unsupported hypersearch version \"%s\"" % (searchJobParams["hsVersion"]))
+                                    info = search.getOptimizationMetricInfo()
+                                    return info
+                            # Print metrics, while looking for the best model
+                            formatStr = None
+                            # NOTE: we may find additional metrics if HyperSearch is still running
+                            foundMetricsKeySet = set(metricsKeys)
+                            sortedMetricsKeys = []
+                            # pull out best Model from jobs table
+                            jobInfo = _clientJobsDB().jobInfo(hyperSearchJob.getJobID())
+                            # Try to return a decent error message if the job was cancelled for some
+                            # reason.
+                            if jobInfo.cancel == 1:
+                                raise Exception(jobInfo.workerCompletionMsg)
+                            try:
+                                results = json.loads(jobInfo.results)
+                            except Exception, e:
+                                print "json.loads(jobInfo.results) raised an exception.  Here is some info to help with debugging:"
+                                print "jobInfo: ", jobInfo
+                                print "jobInfo.results: ", jobInfo.results
+                                print "EXCEPTION: ", e
+                                raise
+                            bestModelNum = results["bestModel"]
+                            bestModelIterIndex = None
+                            # performance metrics for the entire job
+                            totalWallTime = 0
+                            totalRecords = 0
+                            # At the end, we will sort the models by their score on the optimization metric
+                            scoreModelIDDescList = []
+                            for (i, modelInfo) in enumerate(_iterModels(modelIDs)):
+                                # Output model info to report csv
+                                reportWriter.emit(modelInfo)
+                                # Update job metrics
+                                totalRecords+=modelInfo.getNumRecords()
+                                format = "%Y-%m-%d %H:%M:%S"
+                                startTime = modelInfo.getStartTime()
+                                if modelInfo.isFinished():
+                                    endTime = modelInfo.getEndTime()
+                                    st = datetime.strptime(startTime, format)
+                                    et = datetime.strptime(endTime, format)
+                                    totalWallTime+=(et-st).seconds
+                                # Tabulate experiment dispositions
+                                modelStats.update(modelInfo)
+                                # For convenience
+                                expDesc = modelInfo.getModelDescription()
+                                reportMetrics = modelInfo.getReportMetrics()
+                                optimizationMetrics = modelInfo.getOptimizationMetrics()
+                                if modelInfo.getModelID() == bestModelNum:
+                                    bestModel = modelInfo
+                                    bestModelIterIndex=i
+                                    bestMetric = optimizationMetrics.values()[0]
+                                # Keep track of the best-performing model
+                                if optimizationMetrics:
+                                    assert len(optimizationMetrics) == 1, ("expected 1 opt key, but got %d (%s) in %s" % (len(optimizationMetrics), optimizationMetrics, modelInfo))
+                                # Append to our list of modelIDs and scores
+                                if modelInfo.getCompletionReason().isEOF():
+                                    scoreModelIDDescList.append((optimizationMetrics.values()[0],modelInfo.getModelID(),modelInfo.getGeneratedDescriptionFile(),modelInfo.getParamLabels()))
+                                print "[%d] Experiment %s\n(%s):" % (i, modelInfo, expDesc)
+                                if (modelInfo.isFinished() and not (modelInfo.getCompletionReason().isStopped or modelInfo.getCompletionReason().isEOF())):
+                                    print ">> COMPLETION MESSAGE: %s" % modelInfo.getCompletionMsg()
+                                if reportMetrics:
+                                    # Update our metrics key set and format string
+                                    foundMetricsKeySet.update(reportMetrics.iterkeys())
+                                    if len(sortedMetricsKeys) != len(foundMetricsKeySet):
+                                        sortedMetricsKeys = sorted(foundMetricsKeySet)
+                                        maxKeyLen = max([len(k) for k in sortedMetricsKeys])
+                                        formatStr = "  %%-%ds" % (maxKeyLen+2)
+                                    # Print metrics
+                                    for key in sortedMetricsKeys:
+                                        if key in reportMetrics:
+                                            if key == optimizationMetricKey:
+                                                m = "%r (*)" % reportMetrics[key]
+                                            else:
+                                                m = "%r" % reportMetrics[key]
+                                            print formatStr % (key+":"), m
+                                    print
+                            # Summarize results
+                            print "--------------------------------------------------------------"
+                            if len(modelIDs) > 0:
+                                print "%d experiments total (%s).\n" % (len(modelIDs),("all completed successfully"if (modelStats.numCompletedKilled + modelStats.numCompletedEOF) ==len(modelIDs) else "WARNING: %d models have not completed or there were errors" % (len(modelIDs) - (modelStats.numCompletedKilled + modelStats.numCompletedEOF +modelStats.numCompletedStopped))))
+                                if modelStats.numStatusOther > 0:
+                                    print "ERROR: models with unexpected status: %d" % (modelStats.numStatusOther)
+                                print "WaitingToStart: %d" % modelStats.numStatusWaitingToStart
+                                print "Running: %d" % modelStats.numStatusRunning
+                                print "Completed: %d" % modelStats.numStatusCompleted
+                                if modelStats.numCompletedOther > 0:
+                                    print "    ERROR: models with unexpected completion reason: %d" % (modelStats.numCompletedOther)
+                                print "    ran to EOF: %d" % modelStats.numCompletedEOF
+                                print "    ran to stop signal: %d" % modelStats.numCompletedStopped
+                                print "    were orphaned: %d" % modelStats.numCompletedOrphaned
+                                print "    killed off: %d" % modelStats.numCompletedKilled
+                                print "    failed: %d" % modelStats.numCompletedError
+                                assert modelStats.numStatusOther == 0, "numStatusOther=%s" % (modelStats.numStatusOther)
+                                assert modelStats.numCompletedOther == 0, "numCompletedOther=%s" % (modelStats.numCompletedOther)
+                            else:
+                                print "0 experiments total."
+                            # Print out the field contributions
+                            print
+                            global gCurrentSearch
+                            jobStatus = hyperSearchJob.getJobStatus(gCurrentSearch._workers)
+                            jobResults = jobStatus.getResults()
+                            if "fieldContributions" in jobResults:
+                                print "Field Contributions:"
+                                pprint.pprint(jobResults["fieldContributions"], indent=4)
+                            else:
+                                print "Field contributions info not available"
+                            # Did we have an optimize key?
+                            if bestModel is not None:
+                                maxKeyLen = max([len(k) for k in sortedMetricsKeys])
+                                maxKeyLen = max(maxKeyLen, len(optimizationMetricKey))
+                                formatStr = "  %%-%ds" % (maxKeyLen+2)
+                                bestMetricValue = bestModel.getOptimizationMetrics().values()[0]
+                                optimizationMetricName = bestModel.getOptimizationMetrics().keys()[0]
+                                print
+                                print "Best results on the optimization metric %s (maximize=%s):" % (optimizationMetricName, maximizeMetric)
+                                print "[%d] Experiment %s (%s):" % (bestModelIterIndex, bestModel, bestModel.getModelDescription())
+                                print formatStr % (optimizationMetricName+":"), bestMetricValue
+                                print
+                                print "Total number of Records processed: %d"  % totalRecords
+                                print
+                                print "Total wall time for all models: %d" % totalWallTime
+                                hsJobParams = hyperSearchJob.getParams()
+                            # Were we asked to write out the top N model description files?
+                            if options["genTopNDescriptions"] > 0:
+                                print "\nGenerating description files for top %d models..." % (options["genTopNDescriptions"])
+                                scoreModelIDDescList.sort()
+                                scoreModelIDDescList = scoreModelIDDescList[0:options["genTopNDescriptions"]]
+                                i = -1
+                                for (score, modelID, description, paramLabels) in scoreModelIDDescList:
+                                    i += 1
+                                    outDir = os.path.join(options["permWorkDir"], "model_%d" % (i))
+                                    print "Generating description file for model %s at %s" % (modelID, outDir)
+                                    if not os.path.exists(outDir):
+                                        os.makedirs(outDir)
+                                    # Fix up the location to the base description file.
+                                    # importBaseDescription() chooses the file relative to the calling file.
+                                    # The calling file is in outDir.
+                                    # The base description is in the user-specified "outDir"
+                                    base_description_path = os.path.join(options["outDir"],"description.py")
+                                    base_description_relpath = os.path.relpath(base_description_path,start=outDir)
+                                    description = description.replace("importBaseDescription('base.py', config)","importBaseDescription('%s', config)" % base_description_relpath)
+                                    fd = open(os.path.join(outDir, "description.py"), "wb")
+                                    fd.write(description)
+                                    fd.close()
+                                    # Generate a csv file with the parameter settings in it
+                                    fd = open(os.path.join(outDir, "params.csv"), "wb")
+                                    writer = csv.writer(fd)
+                                    colNames = paramLabels.keys()
+                                    colNames.sort()
+                                    writer.writerow(colNames)
+                                    row = [paramLabels[x] for x in colNames]
+                                    writer.writerow(row)
+                                    fd.close()
+                                    print "Generating model params file..."
+                                    # Generate a model params file alongside the description.py
+                                    mod = imp.load_source("description", os.path.join(outDir,"description.py"))
+                                    model_description = mod.descriptionInterface.getModelDescription()
+                                    fd = open(os.path.join(outDir, "model_params.py"), "wb")
+                                    fd.write("%s\nMODEL_PARAMS = %s" % (getCopyrightHead(),pprint.pformat(model_description)))
+                                    fd.close()
+                                print
+                            reportWriter.finalize()
+                            return model_description
                 # Run HyperSearch
                 elif action in ("run", "dryRun", "pickup"):
                     returnValue = _runHyperSearch(runOptions)
-                        def _runHyperSearch(runOptions):
+                        def _runHyperSearch(runOptions):        ### permutations_runner.py ###
                             global gCurrentSearch
                             # Run HyperSearch
                             startTime = time.time()

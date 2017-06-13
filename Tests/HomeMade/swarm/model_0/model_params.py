@@ -42,7 +42,11 @@ MODEL_PARAMS = {'aggregationInfo': {'days': 0,
                                                        'fieldname': 'Ct',
                                                        'maxval': 6.0,
                                                        'minval': 0,
+<<<<<<< HEAD
                                                        'n': 364,
+=======
+                                                       'n': 121,
+>>>>>>> 033a6b107b8871d64f9001fd83fb7c0a9c090f17
                                                        'name': 'Ct',
                                                        'type': 'ScalarEncoder',
                                                        'w': 21},
@@ -51,12 +55,21 @@ MODEL_PARAMS = {'aggregationInfo': {'days': 0,
                                                                       'holiday': 21,
                                                                       'name': u'timestamp_holiday',
                                                                       'type': 'DateEncoder'},
+<<<<<<< HEAD
                                                u'timestamp_timeOfDay': {'fieldname': 'timestamp',
                                                                         'name': 'timestamp',
                                                                         'timeOfDay': (21,
                                                                                       1.7069121366472693),
                                                                         'type': 'DateEncoder'},
                                                u'timestamp_weekend': None},
+=======
+                                               u'timestamp_timeOfDay': None,
+                                               u'timestamp_weekend': {'fieldname': 'timestamp',
+                                                                      'name': 'timestamp',
+                                                                      'type': 'DateEncoder',
+                                                                      'weekend': (21,
+                                                                                  1)}},
+>>>>>>> 033a6b107b8871d64f9001fd83fb7c0a9c090f17
                                   'sensorAutoReset': None,
                                   'verbosity': 0},
                  'spEnable': True,

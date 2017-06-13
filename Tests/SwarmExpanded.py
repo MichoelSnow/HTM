@@ -1427,17 +1427,3 @@ modelParams = permutations_runner.runWithConfig(swarmConfig,{"maxWorkers": maxWo
                     else:
                     raise Exception("Unhandled action: %s" % action)
                 return returnValue
-
-
- 
- 
-modelParamsFile = writeModelParamsToFile(modelParams, name)
-
-
-
-
-
-    _handleDescriptionOption
-        _generateExperiment
-            _generateEncoderStringsV2 - XX
-                _generatePermEncoderStr - XX

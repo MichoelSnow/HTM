@@ -85,41 +85,39 @@ def getNewParams(InputName):
 
 def _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData, csvMin,
                               csvMax ,csvStd, minResolution):
-  """
-  Given model params, figure out the correct parameters for the
-  RandomDistributed encoder. Modifies params in place.
-  """
-  encDict = (
-    params["modelConfig"]["modelParams"]["sensorParams"]["encoders"]
-  )
-  numBuckets = 130.0
-  for Col,ColType in enumerate(CsvDataTypes):
-      if ColType == 'datetime':
-          Nm1 = '%s_timeOfDay' % (CsvCol[Col])
-          encDict[Nm1] = {}
-          encDict[Nm1]['type'] = 'DateEncoder'
-          encDict[Nm1]['timeOfDay'] = [21,9.49]
-          encDict[Nm1]['fieldname'] = CsvCol[Col]
-          encDict[Nm1]['name'] = CsvCol[Col]
-          Nm2 = '%s_dayOfWeek' % (CsvCol[Col])
-          encDict[Nm2] = None
-          Nm3 = '%s_weekend' % (CsvCol[Col])
-          encDict[Nm3] = None
-      elif ColType == 'float':
-          encDict[CsvCol[Col]] = {}
-          encDict[CsvCol[Col]]['name'] = CsvCol[Col]
-          encDict[CsvCol[Col]]['fieldname'] = CsvCol[Col]
-          encDict[CsvCol[Col]]['seed'] = 42
-          encDict[CsvCol[Col]]["type"] =  "RandomDistributedScalarEncoder"
-          maxVal = csvMax[Col]
-          minVal = csvMin[Col]
-           # Handle the corner case where the incoming min and max are the same
-          if minVal == maxVal:
-              maxVal = minVal + 1
-          maxVal = maxVal
-          minVal = minVal
-          resolution = max(minResolution,(maxVal - minVal) / numBuckets)
-          encDict[CsvCol[Col]]["resolution"] = resolution
+    """
+    Given model params, figure out the correct parameters for the
+    RandomDistributed encoder. Modifies params in place.
+    """
+    encDict = (params["modelConfig"]["modelParams"]["sensorParams"]["encoders"])
+    numBuckets = 130.0
+    for Col,ColType in enumerate(CsvDataTypes):
+        if ColType == 'datetime':
+            Nm1 = '%s_timeOfDay' % (CsvCol[Col])
+            encDict[Nm1] = {}
+            encDict[Nm1]['type'] = 'DateEncoder'
+            encDict[Nm1]['timeOfDay'] = [21,9.49]
+            encDict[Nm1]['fieldname'] = CsvCol[Col]
+            encDict[Nm1]['name'] = CsvCol[Col]
+            Nm2 = '%s_dayOfWeek' % (CsvCol[Col])
+            encDict[Nm2] = None
+            Nm3 = '%s_weekend' % (CsvCol[Col])
+            encDict[Nm3] = None
+        elif ColType == 'float':
+            encDict[CsvCol[Col]] = {}
+            encDict[CsvCol[Col]]['name'] = CsvCol[Col]
+            encDict[CsvCol[Col]]['fieldname'] = CsvCol[Col]
+            encDict[CsvCol[Col]]['seed'] = 42
+            encDict[CsvCol[Col]]["type"] =  "RandomDistributedScalarEncoder"
+            maxVal = csvMax[Col]
+            minVal = csvMin[Col]
+            # Handle the corner case where the incoming min and max are the same
+            if minVal == maxVal:
+                maxVal = minVal + 1
+            maxVal = maxVal
+            minVal = minVal
+            resolution = max(minResolution,(maxVal - minVal) / numBuckets)
+            encDict[CsvCol[Col]]["resolution"] = resolution
 #  for encoder in encodersDict.itervalues():
 #    if encoder is not None:
 #      if encoder["type"] == "RandomDistributedScalarEncoder": 
@@ -131,62 +129,61 @@ def _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData, csvMin,
 #
 
 def getModelParamsFromName(InputName):
-  """
-  Given a gym name, assumes a matching model params python module exists within
-  the model_params directory and attempts to import it.
-  :param gymName: Gym name, used to guess the model params module name.
-  :return: OPF Model params dictionary
-  """
-  importName = "model_params.%s_model_params" % (
-    InputName.replace(" ", "_").replace("-", "_")
-  )
-  importedModelParams = importlib.import_module(importName).MODEL_PARAMS
-  params = {'modelConfig': importedModelParams}
-  return params
+    """
+    Given a gym name, assumes a matching model params python module exists 
+    within the model_params directory and attempts to import it.
+    :param gymName: Gym name, used to guess the model params module name.
+    :return: OPF Model params dictionary
+    """
+    importName = "model_params.%s_model_params" % (InputName.replace(" ", "_").
+                                                   replace("-", "_"))
+    importedModelParams = importlib.import_module(importName).MODEL_PARAMS
+    params = {'modelConfig': importedModelParams}
+    return params
 
 def createModel(InputName):
-  """
-  Given a model params dictionary, create a CLA Model. Automatically enables
-  inference for predicted field.
-  :param modelParams: Model params dict
-  :return: OPF Model object
-  """
-  CsvCol,CsvDataTypes,CsvData,csvMin,csvMax,csvStd = getNewParams(InputName)
-  # Try to find already existing params file
-  try:
-      params = getModelParamsFromName(InputName)
-      params["inferenceArgs"] = {'inputPredictedField':'auto',
+    """
+    Given a model params dictionary, create a CLA Model. Automatically enables
+    inference for predicted field.
+    :param modelParams: Model params dict
+    :return: OPF Model object
+    """
+    CsvCol,CsvDataTypes,CsvData,csvMin,csvMax,csvStd = getNewParams(InputName)
+    # Try to find already existing params file
+    try:
+        params = getModelParamsFromName(InputName)
+        params["inferenceArgs"] = {'inputPredictedField':'auto',
             'predictionSteps': [1],'predictedField': CsvCol[1]}
-  except:    
-      print 'swarm file not found, using generic values'
+    except:    
+        print 'swarm file not found, using generic values'
   # Get the new parameters from the csv file
-      minResolution = 0.001
-      tmImplementation = "cpp"
-      # Load model parameters and update encoder params
-      if (tmImplementation is "cpp"):
-        paramFileRelativePath = os.path.join(
-          "anomaly_params_random_encoder",
-          "best_single_metric_anomaly_params_cpp.json")
-      elif (tmImplementation is "tm_cpp"):
-        paramFileRelativePath = os.path.join(
-          "anomaly_params_random_encoder",
-          "best_single_metric_anomaly_params_tm_cpp.json")
-      else:
-        raise ValueError("Invalid string for tmImplementation. \
+        minResolution = 0.001
+        tmImplementation = "cpp"
+        # Load model parameters and update encoder params
+        if (tmImplementation is "cpp"):
+            paramFileRelativePath = os.path.join(
+            "anomaly_params_random_encoder",
+            "best_single_metric_anomaly_params_cpp.json")
+        elif (tmImplementation is "tm_cpp"):
+            paramFileRelativePath = os.path.join(
+            "anomaly_params_random_encoder",
+            "best_single_metric_anomaly_params_tm_cpp.json")
+        else:
+            raise ValueError("Invalid string for tmImplementation. \
                          Try cpp or tm_cpp")
         
-      with resource_stream(__name__, paramFileRelativePath) as infile:
-        params = json.load(infile)  
+        with resource_stream(__name__, paramFileRelativePath) as infile:
+            params = json.load(infile)  
       
-      _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData,
+        _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData,
                                 csvMin, csvMax, csvStd, minResolution)
   
-  params["inferenceArgs"]["predictedField"] = CsvCol[1]
-  params['modelConfig']['modelParams']['clEnable'] = True
-  model = ModelFactory.create(modelConfig=params["modelConfig"])
-  model.enableLearning()  
-  model.enableInference(params["inferenceArgs"])
-  return model
+    params["inferenceArgs"]["predictedField"] = CsvCol[1]
+    params['modelConfig']['modelParams']['clEnable'] = True
+    model = ModelFactory.create(modelConfig=params["modelConfig"])
+    model.enableLearning()  
+    model.enableInference(params["inferenceArgs"])
+    return model
 
 
 

@@ -31,16 +31,12 @@ import getpass
 os.environ["USER"] = getpass.getuser()
 import pandas as pd
 import numpy as np
-from pkg_resources import resource_stream
-import json
 import importlib
 
-from nupic.frameworks.opf.modelfactory import ModelFactory
-#from nupic.frameworks.opf.common_models.cluster_params import (
-#  getScalarMetricWithTimeOfDayAnomalyParams)
+from nupic.frameworks.opf.model_factory import ModelFactory
 
 
-
+from HTMPkg.model_params_generic import GenericParams
 from HTMPkg import output_anomaly_generic
 
 DESCRIPTION = (
@@ -156,25 +152,10 @@ def createModel(InputName):
             'predictionSteps': [1],'predictedField': CsvCol[1]}
     except:    
         print 'swarm file not found, using generic values'
-  # Get the new parameters from the csv file
         minResolution = 0.001
         tmImplementation = "cpp"
         # Load model parameters and update encoder params
-        if (tmImplementation is "cpp"):
-            paramFileRelativePath = os.path.join(
-            "anomaly_params_random_encoder",
-            "best_single_metric_anomaly_params_cpp.json")
-        elif (tmImplementation is "tm_cpp"):
-            paramFileRelativePath = os.path.join(
-            "anomaly_params_random_encoder",
-            "best_single_metric_anomaly_params_tm_cpp.json")
-        else:
-            raise ValueError("Invalid string for tmImplementation. \
-                         Try cpp or tm_cpp")
-        
-        with resource_stream(__name__, paramFileRelativePath) as infile:
-            params = json.load(infile)  
-      
+        params = GenericParams(tmImplementation)      
         _fixupRandomEncoderParams(params, CsvCol, CsvDataTypes, CsvData,
                                 csvMin, csvMax, csvStd, minResolution)
   

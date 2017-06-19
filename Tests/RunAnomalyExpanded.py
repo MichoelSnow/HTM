@@ -96,16 +96,16 @@ model = createModel(InputName)
         model = ModelFactory.create(modelConfig=params["modelConfig"])
             def create(modelConfig, logLevel=logging.ERROR):
                 """ Create a new model instance, given a description dictionary.
-                @param modelConfig (dict) A dictionary describing the current model (TODO: schema)
+                @param modelConfig (dict) A dictionary describing the current model `described here <../../quick-start/example-model-params.html>`_
                 @param logLevel (int) The level of logging output that should be generated
                 @exception (Exception) Unsupported model type
-                @returns (nupic.frameworks.opf.model.Model) A model."""
+                @returns: :class:`nupic.frameworks.opf.model.Model`"""
                 logger = ModelFactory.__getLogger()
                 logger.setLevel(logLevel)
                 logger.debug("ModelFactory returning Model from dict: %s", modelConfig)
                 modelClass = None
-                if modelConfig['model'] == "CLA":
-                    modelClass = CLAModel
+                if modelConfig['model'] == "HTMPrediction":
+                    modelClass = HTMPredictionModel
                 elif modelConfig['model'] == "TwoGram":
                     modelClass = TwoGramModel
                 elif modelConfig['model'] == "PreviousValue":

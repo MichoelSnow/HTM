@@ -32,9 +32,9 @@ import subprocess
 
 from nupic.swarming.hypersearch import object_json as json
 
-import nupic.database.ClientJobsDAO as cjdao
-from nupic.swarming import HypersearchWorker
-from nupic.swarming.HypersearchV2 import HypersearchV2
+import nupic.database.client_jobs_dao as cjdao
+from nupic.swarming import hypersearch_worker
+from nupic.swarming.hypersearch_v2 import HypersearchV2
 from HTMPkg.ExpGenerator import expGenerator
 from nupic.swarming.utils import *
 

@@ -31,7 +31,8 @@ import getpass
 os.environ["USER"] = getpass.getuser()
 import pandas as pd
 import numpy as np
-import importlib
+#import importlib
+import imp
 
 from nupic.frameworks.opf.model_factory import ModelFactory
 
@@ -131,9 +132,12 @@ def getModelParamsFromName(InputName):
     :param gymName: Gym name, used to guess the model params module name.
     :return: OPF Model params dictionary
     """
-    importName = "model_params.%s_model_params" % (InputName.replace(" ", "_").
-                                                   replace("-", "_"))
-    importedModelParams = importlib.import_module(importName).MODEL_PARAMS
+    #print os.getcwd()
+#    importName = "model_params.%s_model_params" % (InputName.replace(" ", "_").replace("-", "_"))
+    importName = "%s_model_params" % (InputName.replace(" ", "_").replace("-", "_"))
+    importPath = "%s\\model_params\\%s_model_params.py" %(os.getcwd(),InputName.replace(" ", "_").replace("-", "_"))
+    importedModelParams = imp.load_source(importName,importPath).MODEL_PARAMS
+#    importedModelParams = importlib.import_module(importName,os.getcwd()).MODEL_PARAMS
     params = {'modelConfig': importedModelParams}
     return params
 
@@ -146,12 +150,14 @@ def createModel(InputName):
     """
     CsvCol,CsvDataTypes,CsvData,csvMin,csvMax,csvStd = getNewParams(InputName)
     # Try to find already existing params file
+    params = getModelParamsFromName(InputName)
     try:
         params = getModelParamsFromName(InputName)
         params["inferenceArgs"] = {'inputPredictedField':'auto',
-            'predictionSteps': [1],'predictedField': CsvCol[1]}
+            'predictionSteps': [24],'predictedField': CsvCol[1]}
+        print 'swarm file found, using given values'
     except:    
-        print 'swarm file not found, using generic values'
+        print 'swarm file NOT found, using generic values'
         minResolution = 0.001
         tmImplementation = "cpp"
         # Load model parameters and update encoder params

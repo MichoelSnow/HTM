@@ -212,6 +212,148 @@ runIoThroughNupic(inputData, model, InputName)
         ResDict = {ColNm[x] : PredFld[x-1] for x in xrange(1,len(ColNm))}
         ResDict["timestamp"] = timestamp
         result = model.run(ResDict)
+            def run(self, inputRecord):
+                assert not self.__restoringFromState
+                assert inputRecord
+                results = super(HTMPredictionModel, self).run(inputRecord)
+                    def run(self, inputRecord):
+                        """
+                        Run one iteration of this model.
+                        :param inputRecord: (object)
+                               A record object formatted according to
+                               :meth:`~nupic.data.record_stream.RecordStreamIface.getNextRecord` or
+                               :meth:`~nupic.data.record_stream.RecordStreamIface.getNextRecordDict`
+                               result format.
+                        :returns: (:class:`~nupic.frameworks.opf.opf_utils.ModelResult`)
+                                 An ModelResult namedtuple. The contents of ModelResult.inferences depends on the the specific inference type of this model, which can be queried by :meth:`.getInferenceType`. """
+                        if hasattr(self, '_numPredictions'):
+                            predictionNumber = self._numPredictions
+                            self._numPredictions += 1
+                        else:
+                            predictionNumber = None
+                        result = opf_utils.ModelResult(predictionNumber=predictionNumber,rawInput=inputRecord)
+                            def __init__(self,predictionNumber=None,rawInput=None,sensorInput=None,inferences=None,metrics=None,predictedFieldIdx=None,predictedFieldName=None,classifierInput=None):
+                                self.predictionNumber = predictionNumber
+                                self.rawInput = rawInput
+                                self.sensorInput = sensorInput
+                                self.inferences = inferences
+                                self.metrics = metrics
+                                self.predictedFieldIdx = predictedFieldIdx
+                                self.predictedFieldName = predictedFieldName
+                                self.classifierInput = classifierInput
+                        return result
+                self.__numRunCalls += 1
+                if self.__logger.isEnabledFor(logging.DEBUG):
+                    self.__logger.debug("HTMPredictionModel.run() inputRecord=%s", (inputRecord))
+                results.inferences = {}
+                self._input = inputRecord
+                # -------------------------------------------------------------------------
+                # Turn learning on or off?
+                if '_learning' in inputRecord:
+                    if inputRecord['_learning']:
+                        self.enableLearning()
+                            def enableLearning(self):
+                                super(HTMPredictionModel, self).enableLearning()
+                                    def enableLearning(self):
+                                        """ Turn Learning on for the current model. """
+                                        self.__learningEnabled = True
+                                        return
+                                self.setEncoderLearning(True)
+                                    def setEncoderLearning(self,learningEnabled):
+                                        self._getEncoder().setLearning(learningEnabled)
+                                            def _getEncoder(self):
+                                                """Returns:  sensor region's encoder for the given network"""
+                                                return  self._getSensorRegion().getSelf().encoder
+                                                    def _getSensorRegion(self):
+                                                        """Returns reference to the network's Sensor region"""
+                                                        return self._netInfo.net.regions['sensor']
+                    else:
+                        self.disableLearning()
+                            def disableLearning(self):
+                                super(HTMPredictionModel, self).disableLearning()
+                                    def disableLearning(self):
+                                        """ Turn Learning off for the current model. """
+                                        self.__learningEnabled = False
+                                        return
+                                self.setEncoderLearning(False)
+                                    def setEncoderLearning(self,learningEnabled):
+                                        self._getEncoder().setLearning(learningEnabled)
+                ###########################################################################
+                # Predictions and Learning
+                ###########################################################################
+                self._sensorCompute(inputRecord)
+                    def _sensorCompute(self, inputRecord):
+                        sensor = self._getSensorRegion()
+                            def _getSensorRegion(self):
+                                """Returns reference to the network's Sensor region"""
+                                return self._netInfo.net.regions['sensor']
+                        self._getDataSource().push(inputRecord)
+                            def _getDataSource(self):
+                                """Returns: data source that we installed in sensor region"""
+                                return self._getSensorRegion().getSelf().dataSource
+                        sensor.setParameter('topDownMode', False)
+                            def setParameter(self, paramName, value):
+                                """Set parameter value"""
+                                (setter, getter) = self._getParameterMethods(paramName)
+                                if setter is None:
+                                    import exceptions
+                                    raise exceptions.Exception("setParameter -- parameter name '%s' does not exist in region %s of type %s"% (paramName, self.name, self.type))
+                                setter(paramName, value)
+                        sensor.prepareInputs()
+                        try:
+                            sensor.compute()
+                        except StopIteration as e:
+                            raise Exception("Unexpected StopIteration", e,"ACTUAL TRACEBACK: %s" % traceback.format_exc())
+                self._spCompute()
+                    def _spCompute(self):
+                        sp = self._getSPRegion()
+                        if sp is None:
+                            return
+                        sp.setParameter('topDownMode', False)
+                        sp.setParameter('inferenceMode', self.isInferenceEnabled())
+                        sp.setParameter('learningMode', self.isLearningEnabled())
+                        sp.prepareInputs()
+                        sp.compute()
+                self._tpCompute()
+                    def _tpCompute(self):
+                        tm = self._getTPRegion()
+                        if tm is None:
+                            return
+                        if (self.getInferenceType() == InferenceType.TemporalAnomaly or self._isReconstructionModel()):
+                          topDownCompute = True
+                        else:
+                          topDownCompute = False
+                        tm = self._getTPRegion()
+                        tm.setParameter('topDownMode', topDownCompute)
+                        tm.setParameter('inferenceMode', self.isInferenceEnabled())
+                        tm.setParameter('learningMode', self.isLearningEnabled())
+                        tm.prepareInputs()
+                        tm.compute()
+                results.sensorInput = self._getSensorInputRecord(inputRecord)
+                inferences = {}
+                # TODO: Reconstruction and temporal classification not used. Remove
+                if self._isReconstructionModel():
+                    inferences = self._reconstructionCompute()
+                elif self._isMultiStepModel():
+                    inferences = self._multiStepCompute(rawInput=inputRecord)
+                # For temporal classification. Not used, and might not work anymore
+                elif self._isClassificationModel():
+                    inferences = self._classificationCompute()
+                results.inferences.update(inferences)
+                inferences = self._anomalyCompute()
+                results.inferences.update(inferences)
+                # -----------------------------------------------------------------------
+                # Store the index and name of the predictedField
+                results.predictedFieldIdx = self._predictedFieldIdx
+                results.predictedFieldName = self._predictedFieldName
+                results.classifierInput = self._getClassifierInputRecord(inputRecord)
+                # =========================================================================
+                # output
+                assert (not self.isInferenceEnabled() or results.inferences is not None), "unexpected inferences: %r" %  results.inferences
+                #self.__logger.setLevel(logging.DEBUG)
+                if self.__logger.isEnabledFor(logging.DEBUG):
+                    self.__logger.debug("inputRecord: %r, results: %r" % (inputRecord,results))
+                return results
         result = shifter.shift(result)
         steps = result.inferences["multiStepBestPredictions"].keys()
         prediction = result.inferences["multiStepBestPredictions"][steps[0]]

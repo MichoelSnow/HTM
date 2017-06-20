@@ -236,7 +236,7 @@ def runWithConfig(swarmConfig, options,
                   permWorkDir=None, verbosity=1):
   """
   Starts a swarm, given an dictionary configuration.
-  @param swarmConfig {dict} A complete [swarm description](https://github.com/numenta/nupic/wiki/Running-Swarms#the-swarm-description) object.
+  @param swarmConfig {dict} A complete [swarm description](http://nupic.docs.numenta.org/0.7.0.dev0/guides/swarming/running.html#the-swarm-description) object.
   @param outDir {string} Optional path to write swarm details (defaults to
                          current working directory).
   @param outputLabel {string} Optional label for output (defaults to "default").
@@ -280,7 +280,7 @@ def runWithJsonFile(expJsonFilePath, options, outputLabel, permWorkDir):
   arguments in through the options parameter.
 
   @param expJsonFilePath {string} Path to a JSON file containing the complete
-                                 [swarm description](https://github.com/numenta/nupic/wiki/Running-Swarms#the-swarm-description).
+                                 [swarm description](http://nupic.docs.numenta.org/0.7.0.dev0/guides/swarming/running.html#the-swarm-description).
   @param options {dict} CLI options.
   @param outputLabel {string} Label for output.
   @param permWorkDir {string} Location of working directory.
@@ -350,7 +350,7 @@ def runPermutations(_):
     "nupic.swarming.permutations_runner.runPermutations() is no longer "
     "implemented. It has been replaced with a simpler function for library "
     "usage: nupic.swarming.permutations_runner.runWithConfig(). See docs "
-    "at https://github.com/numenta/nupic/wiki/Running-Swarms#running-a-swarm-"
+    "at http://nupic.docs.numenta.org/0.7.0.dev0/guides/swarming/running.html"
     "programmatically for details.")
 
 
@@ -653,7 +653,7 @@ class _HyperSearchRunner(object):
       print "=================================================================="
       print "RUNNING PERMUTATIONS INLINE as \"DRY RUN\"..."
       print "=================================================================="
-      jobID = HypersearchWorker.main(args)
+      jobID = hypersearch_worker.main(args)
 
     else:
       cmdLine = _setUpExports(self._options["exports"])
@@ -670,7 +670,7 @@ class _HyperSearchRunner(object):
         maximumWorkers=maxWorkers,
         jobType=self.__cjDAO.JOB_TYPE_HS)
 
-      cmdLine = "python -m nupic.swarming.HypersearchWorker" \
+      cmdLine = "python -m nupic.swarming.hypersearch_worker" \
                  " --jobID=%d" % (jobID)
       self._launchWorkers(cmdLine, maxWorkers)
 
@@ -1423,7 +1423,7 @@ class _NupicJob(object):
     """ @private
     Our Nupic Job Info abstraction class"""
 
-    # Job Status values (per ClientJobsDAO.py):
+    # Job Status values (per client_jobs_dao.py):
     __nupicJobStatus_NotStarted  = cjdao.ClientJobsDAO.STATUS_NOTSTARTED
     __nupicJobStatus_Starting    = cjdao.ClientJobsDAO.STATUS_STARTING
     __nupicJobStatus_running     = cjdao.ClientJobsDAO.STATUS_RUNNING

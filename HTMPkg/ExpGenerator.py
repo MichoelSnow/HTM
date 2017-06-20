@@ -172,7 +172,7 @@ def _handleDescriptionOption(cmdArgStr, outDir, usageStr, hsVersion,
                 be 'v1' or 'v2'
   claDescriptionTemplateFile: Filename containing the template description
   retval:     nothing
-  
+
 
   """
   # convert --description arg from JSON string to dict
@@ -624,14 +624,14 @@ def _generateEncoderStringsV1(includedFields):
 
 def _generatePermEncoderStr(options, encoderDict):
   """ Generate the string that defines the permutations to apply for a given
-  encoder. 
-  
+  encoder.
+
   Parameters:
   -----------------------------------------------------------------------
   options: experiment params
   encoderDict: the encoder dict, which gets placed into the description.py
-  
-  
+
+
   For example, if the encoderDict contains:
       'consumption':     {   
                 'clipInput': True,

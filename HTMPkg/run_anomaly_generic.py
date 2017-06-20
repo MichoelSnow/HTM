@@ -35,7 +35,7 @@ import numpy as np
 import imp
 
 from nupic.frameworks.opf.model_factory import ModelFactory
-
+from nupic.data.inference_shifter import InferenceShifter
 
 from HTMPkg.model_params_generic import GenericParams
 from HTMPkg import output_anomaly_generic
@@ -150,11 +150,11 @@ def createModel(InputName):
     """
     CsvCol,CsvDataTypes,CsvData,csvMin,csvMax,csvStd = getNewParams(InputName)
     # Try to find already existing params file
-    params = getModelParamsFromName(InputName)
     try:
         params = getModelParamsFromName(InputName)
+        steps = int(params["modelConfig"]["modelParams"]["clParams"]["steps"])
         params["inferenceArgs"] = {'inputPredictedField':'auto',
-            'predictionSteps': [24],'predictedField': CsvCol[1]}
+            'predictionSteps': [steps],'predictedField': CsvCol[1]}
         print 'swarm file found, using given values'
     except:    
         print 'swarm file NOT found, using generic values'
@@ -177,41 +177,50 @@ def createModel(InputName):
 
 
 def runIoThroughNupic(inputData, model, InputName):
-  """
-  Handles looping over the input data and passing each row into the given model
-  object, as well as extracting the result object and passing it into an output
-  handler.
-  :param inputData: file path to input data CSV
-  :param model: OPF Model object
-  :param InputName: Gym name, used for output handler naming
-  """
-  inputFile = open(inputData, "rb")
-  csvReader = csv.reader(inputFile)
-  # skip header rows     
-  ColNm = csvReader.next()
-  csvReader.next()
-  csvReader.next()
+    """
+    Handles looping over the input data and passing each row into the given model
+    object, as well as extracting the result object and passing it into an output
+    handler.
+    :param inputData: file path to input data CSV
+    :param model: OPF Model object
+    :param InputName: Gym name, used for output handler naming
+    """
+    inputFile = open(inputData, "rb")
+    csvReader = csv.reader(inputFile)
+    # skip header rows     
+    ColNm = csvReader.next()
+    csvReader.next()
+    csvReader.next()
 
-  output = output_anomaly_generic.NuPICFileOutput(InputName)
+    output = output_anomaly_generic.NuPICFileOutput(InputName)
+    shifter = InferenceShifter()
+    counter = 0
+#    prediction = []
+#    prediction2 = []
+    for row in csvReader:
+        counter += 1
+        if (counter % 300 == 0):
+            print "Read %i lines..." % counter
+        timestamp = datetime.datetime.strptime(row[0], DATE_FORMAT)
+        PredFld = [float(row[Ct]) for Ct in xrange(1,len(ColNm))]
+        ResDict = {ColNm[x] : PredFld[x-1] for x in xrange(1,len(ColNm))}
+        ResDict["timestamp"] = timestamp
+        result = model.run(ResDict)
+        
+        result = shifter.shift(result)
+#        steps2 = result2.inferences["multiStepBestPredictions"].keys()
+#        prediction2 += [result2.inferences["multiStepBestPredictions"][steps2[0]]]
+        
+        steps = result.inferences["multiStepBestPredictions"].keys()
+        prediction = result.inferences["multiStepBestPredictions"][steps[0]]
+        anomalyScore = result.inferences["anomalyScore"]
+        output.write(timestamp, PredFld[0], prediction, anomalyScore)
+#        if counter == 100:
+#            break
+        
 
-  counter = 0
-  for row in csvReader:
-    counter += 1
-    if (counter % 100 == 0):
-      print "Read %i lines..." % counter
-    timestamp = datetime.datetime.strptime(row[0], DATE_FORMAT)
-    PredFld = [float(row[Ct]) for Ct in xrange(1,len(ColNm))]
-    ResDict = {ColNm[x] : PredFld[x-1] for x in xrange(1,len(ColNm))}
-    ResDict["timestamp"] = timestamp
-    result = model.run(ResDict)
-
-
-    prediction = result.inferences["multiStepBestPredictions"][1]
-    anomalyScore = result.inferences["anomalyScore"]
-    output.write(timestamp, PredFld[0], prediction, anomalyScore)
-
-  inputFile.close()
-  output.close()
+    inputFile.close()
+    output.close()
 
 
 # %%

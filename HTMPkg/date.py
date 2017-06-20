@@ -180,8 +180,8 @@ class DateEncoder(Encoder):
     if holiday != 0:
       # A "continuous" binary value. = 1 on the holiday itself and smooth ramp
       #  0->1 on the day before the holiday and 1->0 on the day after the holiday.
-      self.holidayEncoder = ScalarEncoder(w = holiday, minval = 0, maxval=1,
-                                          periodic=False, radius=1,
+      self.holidayEncoder = ScalarEncoder(w = holiday[0], minval = 0, maxval=1,
+                                          periodic=False, radius=holiday[1],
                                           name="holiday", forced=forced)
       self.holidayOffset = self.width
       self.width += self.holidayEncoder.getWidth()

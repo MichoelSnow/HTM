@@ -23,6 +23,7 @@ DtRng = pd.date_range(start = '5/1/2016', end = '5/1/2017', freq = 'H')
 HrRng = DtRng.hour
 HolRng = FedHol.holidays(FedHol(),start = DtRng[0],end = DtRng[-1] + pd.Timedelta('365 days'))
 WrkDay = np.logical_and(DtRng.weekday < 5,~(pd.DatetimeIndex(DtRng).normalize()).isin(HolRng))
+#WrkDay = DtRng.weekday < 5
 WrkDay = WrkDay.astype(int) *5+1
 DayVal = np.sin(HrRng/24.0*np.pi)*WrkDay
 
@@ -32,7 +33,7 @@ DtDf = pd.DataFrame({'timestamp':DtRng,'Ct':DayVal})
 DtDf = DtDf[['timestamp','Ct']]
 
 DtDf_csv = HTMprep(DtDf,'timestamp','Ct')
-DtDf_csv.to_csv('E:\MyDocuments\GitHub\HTM\Tests\HomeMade\HMdata.csv',index = False)
+DtDf_csv.to_csv('E:\MyDocuments\GitHub\HTM\Tests\HomeMade\HMdataNoHol.csv',index = False)
 
 HolCntDwn = []
 HolCt = 0

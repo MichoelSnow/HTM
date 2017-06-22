@@ -125,9 +125,10 @@ def RDSE(**kwargs):
     """
     return RandomDistributedScalarEncoder(**kwargs)
 
-A = RDSE(resolution=5, w=3, n=20)
+A = RDSE(resolution=3, w=1, n=7)
 A.encode(50)
-A.encode(5)
+A.encode(3)
+
 
 # RANDOM DISTRIBUTED SCALAR ENCODER EXAMPLES
 # Repetition of our ealier temperature example

@@ -6,8 +6,6 @@ Created on Fri Jun 23 14:52:37 2017
 """
 
 import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib import gridspec
 from matplotlib.dates import date2num, DateFormatter
 
 def HTMprep(DataFl,timeNm,VarNm):
@@ -47,3 +45,68 @@ ED_D_csv = HTMprep(ED_D,'timestamp','Ct')
 ED_D_csv = ED_D_csv[['timestamp','Ct']]
 
 ED_D_csv.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ED_Date_Ct.csv', index=False)
+
+
+# %% Plotting the Data
+
+ED = pd.read_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ED_Timestamp_Ct.csv')
+ED = ED.iloc[2:,]
+ED.Ct = ED.Ct.astype(float)
+ED.timestamp = pd.to_datetime(ED.timestamp, format = "%Y-%m-%d %H:%M:%S")
+ED['dates'] = [date2num(date) for date in ED['timestamp']]
+
+
+MainGraph = ED.plot(x = 'dates',y = 'Ct')
+dateFormatter = DateFormatter('%m/%d')
+MainGraph.xaxis.set_major_formatter(dateFormatter)
+
+
+# %%
+
+ED = pd.read_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ERVisitsTriaged.csv', na_values="") 
+ED.TRIAGED = pd.to_datetime(ED.TRIAGED, format = "%Y-%m-%d %H:%M:%S", errors = 'coerce')
+ED = ED[pd.notnull(ED.TRIAGED)]
+ED = ED[:][ED.TRIAGED <= '2017/06/27']
+ED = ED[:][ED.TRIAGED >= '1997/03/15']
+ED['Ct'] = 1
+ED = ED.set_index('TRIAGED')
+ED_H = ED.resample('H').sum()
+ED_H = ED_H.fillna(0)
+
+
+ED_H['timestamp'] = ED_H.index
+ED_H_csv = HTMprep(ED_H,'timestamp','Ct')
+ED_H_csv = ED_H_csv[['timestamp','Ct']]
+ED_H_csv.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ED_Triaged_Ct.csv', index=False)
+
+
+ED_plt = ED_H[:]
+ED_plt['dates'] = [date2num(date) for date in ED_plt.index]
+MainGraph = ED_plt.plot(x = 'dates',y = 'Ct')
+dateFormatter = DateFormatter('%m/%d/%y')
+MainGraph.xaxis.set_major_formatter(dateFormatter)
+
+
+ED_2H = ED.resample('2H').sum()
+ED_2H = ED_2H.fillna(0)
+
+ED_plt = ED_2H[:]
+ED_plt['dates'] = [date2num(date) for date in ED_plt.index]
+MainGraph = ED_plt.plot(x = 'dates',y = 'Ct')
+dateFormatter = DateFormatter('%m/%d/%y')
+MainGraph.xaxis.set_major_formatter(dateFormatter)
+
+ED_2H['timestamp'] = ED_2H.index
+ED_2H_csv = HTMprep(ED_2H,'timestamp','Ct')
+ED_2H_csv = ED_2H_csv[['timestamp','Ct']]
+ED_2H_csv.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ED_Triaged_Ct_2H.csv', index=False)
+
+
+ED_3H = ED.resample('3H').sum()
+ED_3H = ED_3H.fillna(0)
+ED_3H['timestamp'] = ED_3H.index
+ED_3H_csv = HTMprep(ED_3H,'timestamp','Ct')
+ED_3H_csv = ED_3H_csv[['timestamp','Ct']]
+ED_3H_csv.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ED_Triaged_Ct_3H.csv', index=False)
+
+

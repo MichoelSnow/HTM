@@ -88,7 +88,7 @@ def PlotData(InputName):
     MainGraph = DataFl.plot(x = 'dates', y=[DataFl.columns[1],'prediction'], ax = ax0)
     AnomalyGraph = DataFl.plot(x = 'dates', y=['anomalyScore','anomaly_likelihood'], ax=ax1)
     
-    dateFormatter = DateFormatter('%m/%d')
+    dateFormatter = DateFormatter('%m/%d/%y')
     MainGraph.xaxis.set_major_formatter(dateFormatter)
     AnomalyGraph.xaxis.set_major_formatter(dateFormatter)
     

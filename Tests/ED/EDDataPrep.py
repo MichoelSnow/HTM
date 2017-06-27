@@ -137,3 +137,10 @@ Wthr = Wthr.set_index('DATE')
 Wthr_3H = Wthr.resample('3H').ffill()
 
 ED_3H['Tmp'] = Wthr_3H.TAVG
+
+ED_3H['timestamp'] = ED_3H.index
+ED_3H = ED_3H[['timestamp','Ct','Tmp']]
+ED_3H.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ed_wthr_3h_data.csv', index=False)
+
+ED_3H_csv = HTMprep2(ED_3H,'timestamp','Ct','Tmp')
+ED_3H_csv.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ed_wthr_3h.csv', index=False)

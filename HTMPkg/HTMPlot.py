@@ -80,15 +80,15 @@ def PlotData(InputName):
     Resid = DataFl.prediction-DataFl[DataFl.columns[1]]
     AnomScr = abs(Resid)/DataFl[DataFl.columns[1]]
     SqEr = Resid**2
-    CumAvg = [0]
-    ValCt = 0
-    for i in AnomScr:
-        ValCt += 1
-        CumAvg += [CumAvg[-1] + (i - CumAvg[-1])/ValCt]
-        if np.isnan(CumAvg[-1]):
-            CumAvg[-1] =0 
-    CumAvg = CumAvg[1:]
-    
+#    CumAvg = [0]
+#    ValCt = 0
+#    for i in AnomScr:
+#        ValCt += 1
+#        CumAvg += [CumAvg[-1] + (i - CumAvg[-1])/ValCt]
+#        if np.isnan(CumAvg[-1]):
+#            CumAvg[-1] =0 
+#    CumAvg = CumAvg[1:]
+#    
     MovAvg = [0]
     MovWin = 240
     MSE = [0]
@@ -111,24 +111,30 @@ def PlotData(InputName):
 #            MovAvg[-1] =0 
     #plt.ion()
     #fig = plt.figure(figsize=(8, 6))
-    DataFl['CumAvg'] = CumAvg
+#    DataFl['CumAvg'] = CumAvg
     DataFl['MovAvg'] = MovAvg
     DataFl['MSE'] = MSE
     
     gs = gridspec.GridSpec(2,1, height_ratios=[3, 1]) 
     ax0 = plt.subplot(gs[0])
+    ax01 = ax0.twinx()
     ax1 = plt.subplot(gs[1], sharex=ax0)
     #ax1.set_color_cycle(['m', 'r'])
     ax1.set_prop_cycle('color',['m', 'r','g'])
+    ax01.set_prop_cycle('color',['g'])
     
-    MainGraph = DataFl.plot(x = 'dates', y=[DataFl.columns[1],'prediction','MSE'], ax = ax0)
+#    MainGraph = DataFl.plot(x = 'dates', y=[DataFl.columns[1],'prediction','MSE'], ax = ax0)
+    MainGraph = DataFl.plot(x = 'dates', y=[DataFl.columns[1],'prediction'], ax = ax0)
+    MainGraphR = DataFl.plot(x = 'dates', y='MSE', ax = ax01)
     AnomalyGraph = DataFl.plot(x = 'dates', y=['anomalyScore','anomaly_likelihood','MovAvg'], ax=ax1)
     
     dateFormatter = DateFormatter('%m/%d/%y')
     MainGraph.xaxis.set_major_formatter(dateFormatter)
+    MainGraphR.xaxis.set_major_formatter(dateFormatter)
     AnomalyGraph.xaxis.set_major_formatter(dateFormatter)
     
     ax0.set_ylabel(DataFl.columns[1])
+    ax01.set_ylabel('MSE 30 days', color = 'g')
     ax1.set_ylabel('Percent')
     ax1.set_xlabel('Dates')
     
@@ -136,8 +142,10 @@ def PlotData(InputName):
     highlightChart(anomalies, DataFl['dates'], MainGraph)
     highlightChart(anomalies, DataFl['dates'], AnomalyGraph)
     
-    MainGraph.legend(tuple(['actual', 'predicted','MSE 30 days']), loc=4)
-    AnomalyGraph.legend(tuple(['anomaly score','anomaly likelihood','MAPE 30 days']), loc=4)    
+#    MainGraph.legend(tuple(['actual', 'predicted','MSE 30 days']), loc=4)
+    MainGraph.legend(tuple(['actual', 'predicted']), loc=4)
+    AnomalyGraph.legend(tuple(['anomaly score','anomaly likelihood','MAPE 30 days']), loc=4)
+    MainGraphR.legend_.remove()    
     #plt.draw()
     #plt.ioff()
     ax0.set_title(InputName)

@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib.dates import date2num, DateFormatter
+import numpy as np
 
 
 DATA_DIR = "."
@@ -76,17 +77,52 @@ def PlotData(InputName):
     inputData = "%s/%s" % (DATA_DIR, InputName.replace(" ", "_"))
     DataFl = ImportData(inputData) 
     anomalies = extractAnomalyIndices(DataFl['anomaly_likelihood'].tolist())
+    Resid = DataFl.prediction-DataFl[DataFl.columns[1]]
+    AnomScr = abs(Resid)/DataFl[DataFl.columns[1]]
+    SqEr = Resid**2
+    CumAvg = [0]
+    ValCt = 0
+    for i in AnomScr:
+        ValCt += 1
+        CumAvg += [CumAvg[-1] + (i - CumAvg[-1])/ValCt]
+        if np.isnan(CumAvg[-1]):
+            CumAvg[-1] =0 
+    CumAvg = CumAvg[1:]
+    
+    MovAvg = [0]
+    MovWin = 240
+    MSE = [0]
+    StrtCt = -1
+    for i in range(len(AnomScr)):
+        if np.isnan(AnomScr[i]):
+            StrtCt += 1
+            MovAvg += [0]
+            MSE += [0]
+        elif i-StrtCt <= MovWin:
+            MovAvg += [MovAvg[-1] + (AnomScr[i] - MovAvg[-1])/(i-StrtCt)]
+            MSE += [MSE[-1] + (SqEr[i] - MSE[-1])/(i-StrtCt)]
+        else:
+            MovAvg += [MovAvg[-1] + (AnomScr[i] - AnomScr[i-MovWin])/MovWin]
+            MSE += [MSE[-1] + (SqEr[i] - MSE[i-MovWin])/MovWin]
+    MovAvg = MovAvg[1:]
+    MSE = MSE[1:]
+#            MovAvg2 += [np.nanmean(AnomScr[:i+1])]
+#        if np.isnan(MovAvg[-1]):
+#            MovAvg[-1] =0 
     #plt.ion()
     #fig = plt.figure(figsize=(8, 6))
+    DataFl['CumAvg'] = CumAvg
+    DataFl['MovAvg'] = MovAvg
+    DataFl['MSE'] = MSE
     
     gs = gridspec.GridSpec(2,1, height_ratios=[3, 1]) 
     ax0 = plt.subplot(gs[0])
     ax1 = plt.subplot(gs[1], sharex=ax0)
     #ax1.set_color_cycle(['m', 'r'])
-    ax1.set_prop_cycle('color',['m', 'r'])
+    ax1.set_prop_cycle('color',['m', 'r','g'])
     
-    MainGraph = DataFl.plot(x = 'dates', y=[DataFl.columns[1],'prediction'], ax = ax0)
-    AnomalyGraph = DataFl.plot(x = 'dates', y=['anomalyScore','anomaly_likelihood'], ax=ax1)
+    MainGraph = DataFl.plot(x = 'dates', y=[DataFl.columns[1],'prediction','MSE'], ax = ax0)
+    AnomalyGraph = DataFl.plot(x = 'dates', y=['anomalyScore','anomaly_likelihood','MovAvg'], ax=ax1)
     
     dateFormatter = DateFormatter('%m/%d/%y')
     MainGraph.xaxis.set_major_formatter(dateFormatter)
@@ -100,15 +136,15 @@ def PlotData(InputName):
     highlightChart(anomalies, DataFl['dates'], MainGraph)
     highlightChart(anomalies, DataFl['dates'], AnomalyGraph)
     
-    MainGraph.legend(tuple(['actual', 'predicted']), loc=3)
-    AnomalyGraph.legend(tuple(['anomaly score','anomaly likelihood']), loc=3)    
+    MainGraph.legend(tuple(['actual', 'predicted','MSE 30 days']), loc=4)
+    AnomalyGraph.legend(tuple(['anomaly score','anomaly likelihood','MAPE 30 days']), loc=4)    
     #plt.draw()
     #plt.ioff()
     ax0.set_title(InputName)
     plt.draw()
     plt.show()
 
-
+# %%
 
 if __name__ == "__main__":
     args = sys.argv[1:]

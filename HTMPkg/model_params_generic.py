@@ -21,7 +21,6 @@
 
 
 import json
-import numpy as np
 import os
 from pkg_resources import resource_stream
 

@@ -12,6 +12,9 @@ def HTMprep(DataFl,timeNm,VarNm):
     line = pd.DataFrame({timeNm:["datetime"," "],VarNm:["float"," "]},index=[0,1])
     return pd.concat([line, DataFl],join = 'inner',ignore_index =True)
 
+def HTMprep2(DataFl,timeNm,VarNm,VarNm2):
+    line = pd.DataFrame({timeNm:["datetime"," "],VarNm:["float"," "],VarNm2:["float"," "]},index=[0,1])
+    return pd.concat([line, DataFl],join = 'inner',ignore_index =True)
 # %% ED Timestamp data
 
 ED = pd.read_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ERVisitsTimeStamp.csv', na_values="") 
@@ -110,3 +113,27 @@ ED_3H_csv = ED_3H_csv[['timestamp','Ct']]
 ED_3H_csv.to_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ED_Triaged_Ct_3H.csv', index=False)
 
 
+# %% ED TIMESTAMP WITH WEATHER DATA
+
+ED = pd.read_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ERVisitsTriaged.csv', na_values="") 
+Wthr = pd.read_csv('E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\NycDailyWeather.csv', na_values="") 
+Wthr = Wthr[['DATE','TMAX','TMIN']]
+Wthr['TAVG'] = Wthr[['TMAX','TMIN']].mean(axis=1)
+
+ED.TRIAGED = pd.to_datetime(ED.TRIAGED, format = "%Y-%m-%d %H:%M:%S", errors = 'coerce')
+Wthr.DATE = pd.to_datetime(Wthr.DATE, format = "%Y%m%d", errors = 'coerce')
+
+ED = ED[pd.notnull(ED.TRIAGED)]
+ED = ED[:][ED.TRIAGED <= '2017/06/23']
+ED = ED[:][ED.TRIAGED >= '1997/03/15']
+ED['Ct'] = 1
+
+Wthr = Wthr[pd.notnull(Wthr.DATE)]
+Wthr = Wthr[:][Wthr.DATE <= '2017/06/23']
+Wthr = Wthr[:][Wthr.DATE >= '1997/03/15']
+
+ED_3H = ED.resample('3H', on = 'TRIAGED').sum()
+Wthr = Wthr.set_index('DATE')
+Wthr_3H = Wthr.resample('3H').ffill()
+
+ED_3H['Tmp'] = Wthr_3H.TAVG

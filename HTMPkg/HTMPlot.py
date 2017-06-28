@@ -78,7 +78,8 @@ def PlotData(InputName):
     DataFl = ImportData(inputData) 
     anomalies = extractAnomalyIndices(DataFl['anomaly_likelihood'].tolist())
     Resid = DataFl.prediction-DataFl[DataFl.columns[1]]
-    AnomScr = abs(Resid)/DataFl[DataFl.columns[1]]
+    AbsPrcntEr = abs(Resid)/DataFl[DataFl.columns[1]]
+    AbsPrcntEr[np.isinf(AbsPrcntEr)] = float('NaN')
     SqEr = Resid**2
 #    CumAvg = [0]
 #    ValCt = 0
@@ -89,22 +90,29 @@ def PlotData(InputName):
 #            CumAvg[-1] =0 
 #    CumAvg = CumAvg[1:]
 #    
-    MovAvg = [0]
+    MAPE = [0]
     MovWin = 240
     MSE = [0]
     StrtCt = -1
-    for i in range(len(AnomScr)):
-        if np.isnan(AnomScr[i]):
+    for i in range(len(AbsPrcntEr)):
+        if np.isnan(AbsPrcntEr[i]) and i < MovWin:
             StrtCt += 1
-            MovAvg += [0]
+            MAPE += [0]
             MSE += [0]
+        elif np.isnan(AbsPrcntEr[i]):
+            AbsPrcntEr[i] = AbsPrcntEr[i-1]
+            MAPE += [MAPE[-1]]
+            MSE += [MSE[-1]]
         elif i-StrtCt <= MovWin:
-            MovAvg += [MovAvg[-1] + (AnomScr[i] - MovAvg[-1])/(i-StrtCt)]
+            MAPE += [MAPE[-1] + (AbsPrcntEr[i] - MAPE[-1])/(i-StrtCt)]
             MSE += [MSE[-1] + (SqEr[i] - MSE[-1])/(i-StrtCt)]
         else:
-            MovAvg += [MovAvg[-1] + (AnomScr[i] - AnomScr[i-MovWin])/MovWin]
+            if np.isnan(AbsPrcntEr[i-MovWin]):
+                MAPE += [MAPE[-1] + (AbsPrcntEr[i])/MovWin]
+            else:
+                MAPE += [MAPE[-1] + (AbsPrcntEr[i] - AbsPrcntEr[i-MovWin])/MovWin]
             MSE += [MSE[-1] + (SqEr[i] - MSE[i-MovWin])/MovWin]
-    MovAvg = MovAvg[1:]
+    MAPE = MAPE[1:]
     MSE = MSE[1:]
 #            MovAvg2 += [np.nanmean(AnomScr[:i+1])]
 #        if np.isnan(MovAvg[-1]):
@@ -112,7 +120,7 @@ def PlotData(InputName):
     #plt.ion()
     #fig = plt.figure(figsize=(8, 6))
 #    DataFl['CumAvg'] = CumAvg
-    DataFl['MovAvg'] = MovAvg
+    DataFl['MAPE'] = MAPE
     DataFl['MSE'] = MSE
     
     gs = gridspec.GridSpec(2,1, height_ratios=[3, 1]) 
@@ -126,7 +134,7 @@ def PlotData(InputName):
 #    MainGraph = DataFl.plot(x = 'dates', y=[DataFl.columns[1],'prediction','MSE'], ax = ax0)
     MainGraph = DataFl.plot(x = 'dates', y=[DataFl.columns[1],'prediction'], ax = ax0)
     MainGraphR = DataFl.plot(x = 'dates', y='MSE', ax = ax01)
-    AnomalyGraph = DataFl.plot(x = 'dates', y=['anomalyScore','anomaly_likelihood','MovAvg'], ax=ax1)
+    AnomalyGraph = DataFl.plot(x = 'dates', y=['anomalyScore','anomaly_likelihood','MAPE'], ax=ax1)
     
     dateFormatter = DateFormatter('%m/%d/%y')
     MainGraph.xaxis.set_major_formatter(dateFormatter)

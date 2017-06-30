@@ -23,7 +23,7 @@ WndwDys = 30
 DyStps = 8
 PredAhead = 3
 
-InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ed_3h_out_24steps.csv'
+InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\ED\\ed_fac82_hol_3h_out.csv'
 ed_3h_htm = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,1,2])
 ed_3h_htm.index = pd.to_datetime(ed_3h_htm.index, format = "%Y-%m-%d %H:%M:%S", errors = 'coerce') 
 ed_3h_htm['MSE'] = MSE(ed_3h_htm.Ct,ed_3h_htm.prediction,WndwDys,DyStps)

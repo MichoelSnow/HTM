@@ -27,9 +27,9 @@ def MSE(Vals,Pred,WndwDys,DyStps):
 
 WndwDys = 30
 DyStps = 1
-PredAhead = 1
+PredAhead = 3
 
-InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_1steps_out.csv'
+InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_out.csv'
 appt_htm = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,1,2])
 appt_htm.index = pd.to_datetime(appt_htm.index, format = "%Y-%m-%d %H:%M:%S", errors = 'coerce') 
 appt_htm['MSE'] = MSE(appt_htm.Ct,appt_htm.prediction,WndwDys,DyStps)
@@ -61,21 +61,6 @@ appt_ar['MSE'] = MSE(appt_ar.Ct,appt_ar.prediction,WndwDys,DyStps)
 appt['AR'] = appt_ar.prediction
 appt_mse['AR'] = appt_ar.MSE
 
-# %% ARMA model
-
-
-ed_3h_arima = ed_3h_htm[['Ct']]
-arima_mdl = arima_model.ARIMA(ed_3h_arima,(30,1,30))
-arima_fit = arima_mdl.fit()
-ed_3h_arima['prediction'] = ed_3h_arima.predict()
-ed_3h_arima['MSE'] = MSE(ed_3h_arima.Ct,ed_3h_arima.prediction,WndwDys,DyStps)
-
-
-ed_3h['ARIMA'] = ed_3h_arima.prediction
-ed_3h_mse['ARIMA'] = ed_3h_arima.MSE
-
-
-
 
 
 # %% Plot
@@ -98,9 +83,12 @@ ax0.set_ylabel('Traige Cts')
 
 
 
-
-
-
+# %%
+InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_20steps_out.csv'
+appt_htm1 = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,2])
+InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_out.csv'
+appt_htm2 = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,2])
+appt_htm2['pred20'] = appt_htm1.prediction
 
 
 

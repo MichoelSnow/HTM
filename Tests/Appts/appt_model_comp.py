@@ -84,7 +84,7 @@ ax0.set_ylabel('Traige Cts')
 
 
 # %%
-InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_20steps_out.csv'
+InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_out - Copy.csv'
 appt_htm1 = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,2])
 InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_out.csv'
 appt_htm2 = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,2])

@@ -18,11 +18,54 @@
 #
 # http://numenta.org/licenses/
 # ----------------------------------------------------------------------
+result = model.run(ResDict)
+import numpy
+numpy.set_printoptions(threshold=numpy.nan)
 
 os.chdir('E:/MyDocuments/GitHub/HTM/Tests/Appts/')
-InputName = 'appt_htm_0steps.csv'
+InputName = 'appt_htm_0steps'
+
+model = createModel(InputName)
+inputData = "%s/%s.csv" % (DATA_DIR, InputName.replace(" ", "_"))
 
 
+inputFile = open(inputData, "rb")
+csvReader = csv.reader(inputFile)
+# skip header rows     
+ColNm = csvReader.next()
+csvReader.next()
+csvReader.next()
+
+output = output_anomaly_generic.NuPICFileOutput(InputName)
+shifter = InferenceShifter()
+counter = 0
+rowVal = []
+#    prediction = []
+#    prediction2 = []
+for row in csvReader:
+    rowVal+= [row]
+
+row = rowVal[0]    
+timestamp = datetime.datetime.strptime(row[0], DATE_FORMAT)
+PredFld = [float(row[Ct]) for Ct in xrange(1,len(ColNm))]
+ResDict = {ColNm[x] : PredFld[x-1] for x in xrange(1,len(ColNm))}
+ResDict["timestamp"] = timestamp
+result = model.run(ResDict)
+# %%
+result = shifter.shift(result)
+#        steps2 = result2.inferences["multiStepBestPredictions"].keys()
+#        prediction2 += [result2.inferences["multiStepBestPredictions"][steps2[0]]]
+
+steps = result.inferences["multiStepBestPredictions"].keys()
+prediction = result.inferences["multiStepBestPredictions"][steps[0]]
+anomalyScore = result.inferences["anomalyScore"]
+output.write(timestamp, PredFld[0], prediction, anomalyScore)
+#        if counter == 100:
+#            break
+    
+
+inputFile.close()
+output.close()
 # %%
 """
 Groups together code used for creating a NuPIC model and dealing with IO.

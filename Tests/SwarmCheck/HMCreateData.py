@@ -35,9 +35,9 @@ DayVal = np.sin(HrRng/24.0*np.pi)*WrkDay
 
 DtDf = pd.DataFrame({'timestamp':DtRng,'Ct':DayVal})
 DtDf = DtDf[['timestamp','Ct']]
-DtDf['Shift1'] = DtDf.Ct.shift(-1,axis=0)
-DtDf['Shift3'] = DtDf.Ct.shift(-3,axis=0)
-DtDf['Shift5'] = DtDf.Ct.shift(-5,axis=0)
+#DtDf['Shift1'] = DtDf.Ct.shift(-1,axis=0)
+#DtDf['Shift3'] = DtDf.Ct.shift(-3,axis=0)
+#DtDf['Shift5'] = DtDf.Ct.shift(-5,axis=0)
 #DtDf['Shift7'] = DtDf.Ct.shift(-7,axis=0)
 DtDf = DtDf.fillna(0)
 
@@ -49,7 +49,7 @@ DtDf = DtDf.fillna(0)
 #DtDf = DtDf.drop(['dates'],axis=1)
 
 DtDf_htm = HTMprep2(DtDf)
-DtDf_htm.to_csv('E:\MyDocuments\GitHub\HTM\Tests\SwarmCheck\scdata.csv',index = False)
+DtDf_htm.to_csv('E:\MyDocuments\GitHub\HTM\Tests\SwarmCheck\scdata4.csv',index = False)
 
 # %%
 DtDf_csv = HTMprep(DtDf,'timestamp','Ct')

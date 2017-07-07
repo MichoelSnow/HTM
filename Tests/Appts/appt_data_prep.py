@@ -71,7 +71,7 @@ appt_agg_csv = appt_agg[['SHOW','MARRIED','MALE','AGE_0_54','DIST_0_30']]
 
 #appt_agg_csv = appt_agg_csv[appt_agg_csv.index < '2016-01-01']
 
-appt_agg_csv.to_csv('E:\\MyDocuments\\HospAgg\\Appts\\appt_D.csv')
+#appt_agg_csv.to_csv('E:\\MyDocuments\\HospAgg\\Appts\\appt_D.csv')
 
 # %%
 
@@ -98,8 +98,8 @@ appt['MARRIED'] = (appt.MARITALSTATUSID== 3).astype(int)
 appt['SHOW'] = ((appt.APPTSTATUSID == 1) | (appt.APPTSTATUSID == 14)).astype(int)
 appt['MALE'] = (appt.SEX== 'M').astype(int)
 
-age_ranges = [[0,54],[0,17],[18,35],[36,54],[55,70],[71,120]]
-age_names = ['AGE_0_54','AGE_0_17','AGE_18_35','AGE_36_54','AGE_55_70','AGE_71_120']
+age_ranges = [[0,54],[0,17],[18,35],[36,54],[55,70],[71,120],[55,120]]
+age_names = ['AGE_0_54','AGE_0_17','AGE_18_35','AGE_36_54','AGE_55_70','AGE_71_120','AGE_55_120']
 appt = DataSplit(appt,'AGE',age_ranges,age_names)
 dist_ranges = [[0,30],[31,60],[61,90],[91,120],[120,365]]
 dist_names = ['DIST_0_30','DIST_31_60','DIST_61_90','DIST_91_120','DIST_120_365']
@@ -110,15 +110,17 @@ appt_agg = appt_nrw.resample('D',on='APPOINTMENTDATETIME').sum()
 appt_agg = appt_agg.div(appt_agg.Ct,axis=0)
 
 appt_agg['dates'] = [date2num(date) for date in appt_agg.index]
-MainGraph = appt_agg.plot(x='dates',y=['SHOW','AGE_0_54','DIST_0_30'])
+MainGraph = appt_agg.plot(x='dates',y=['SHOW','AGE_0_54','AGE_55_120'])
 dateFormatter = DateFormatter('%m/%d/%y')
 MainGraph.xaxis.set_major_formatter(dateFormatter)  
-
-appt_agg_csv = appt_agg[['SHOW','MARRIED','MALE','AGE_0_54','DIST_0_30']]
+MainGraph.legend(tuple(['Show up','0 to 54 years old','55 to 120 years old']), loc=1)
+MainGraph.set_xlabel('Dates')
+MainGraph.set_ylabel('Percent')
+#appt_agg_csv = appt_agg[['SHOW','MARRIED','MALE','AGE_0_54','DIST_0_30']]
 
 #appt_agg_csv = appt_agg_csv[appt_agg_csv.index < '2016-01-01']
 
-appt_agg_csv.to_csv('E:\\MyDocuments\\HospAgg\\Appts\\appt_D_2007_2015.csv')
+#appt_agg_csv.to_csv('E:\\MyDocuments\\HospAgg\\Appts\\appt_D_2007_2015.csv')
 
 # %%
 

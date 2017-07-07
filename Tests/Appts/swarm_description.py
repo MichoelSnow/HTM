@@ -45,13 +45,31 @@ SWARM_DESCRIPTION = {
     {
       "fieldName": "Ct",
       "fieldType": "float",
-      "maxValue": 6.0,
+      "maxValue": 1.0,
       "minValue": 0
     },
     {
-      "fieldName": "Shift1",
+      "fieldName": "MARRIED",
       "fieldType": "float",
-      "maxValue": 6.0,
+      "maxValue": 1.0,
+      "minValue": 0
+    },
+    {
+      "fieldName": "MALE",
+      "fieldType": "float",
+      "maxValue": 1.0,
+      "minValue": 0
+    },
+    {
+      "fieldName": "AGE_0_54",
+      "fieldType": "float",
+      "maxValue": 1.0,
+      "minValue": 0
+    },
+    {
+      "fieldName": "DIST_0_30",
+      "fieldType": "float",
+      "maxValue": 1.0,
       "minValue": 0
     }
   ],
@@ -62,7 +80,7 @@ SWARM_DESCRIPTION = {
     "streams": [
       {
         "info": "Fndng Ct",
-        "source": "file://scdata2.csv",
+        "source": "file://appt_htm_3steps_swarm.csv",
         "columns": [
           "*"
         ]
@@ -74,7 +92,7 @@ SWARM_DESCRIPTION = {
   "inferenceType": "TemporalAnomaly",
   "inferenceArgs": {
 	# number of steps in advance to predict
-    "predictionSteps": [1], 
+    "predictionSteps": [3], 
 	# name of the csv filed to predict
     "predictedField": "Ct"
   },
@@ -84,5 +102,5 @@ SWARM_DESCRIPTION = {
 	# small -> debugging
 	# medium -> usually what you want
 	# large -> long time but slightly better model params than medium
-  "swarmSize": "medium" 
+  "swarmSize": "large" 
 }

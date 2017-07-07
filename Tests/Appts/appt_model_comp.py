@@ -79,6 +79,8 @@ AnomalyGraph.xaxis.set_major_formatter(dateFormatter)
 ax1.set_xlabel('Dates')
 ax1.set_ylabel('MSE')
 ax0.set_ylabel('Traige Cts')
+MainGraph.legend(tuple(['Show up','Rolling Mean','HTM','Auto Regression']), loc=1)
+AnomalyGraph.legend(tuple(['Rolling Mean','HTM','Auto Regression']), loc=1)
 
 
 

@@ -30,7 +30,7 @@ appt = pd.read_csv('E:\\MyDocuments\\HospAgg\\Appts\\appt_D_2007_2015.csv',
                    na_values="")
 appt.APPOINTMENTDATETIME = pd.to_datetime(appt.APPOINTMENTDATETIME, format = "%Y-%m-%d %H:%M:%S", errors = 'coerce')
 
-steps = 20
+steps = 3
 appt.rename(inplace = True, columns = {"APPOINTMENTDATETIME":"timestamp","SHOW":"Ct"})
 cols = appt.columns
 var_dict = dict()

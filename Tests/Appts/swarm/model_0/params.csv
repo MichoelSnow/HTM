@@ -1,0 +1,2 @@
+modelParams|clParams|alpha,modelParams|sensorParams|encoders|Ct:n,modelParams|sensorParams|encoders|timestamp_weekend:radius,modelParams|spParams|synPermInactiveDec,modelParams|tmParams|activationThreshold,modelParams|tmParams|minThreshold,modelParams|tmParams|pamLength
+0.050050000000000004,36,1,0.05015,14,11,3

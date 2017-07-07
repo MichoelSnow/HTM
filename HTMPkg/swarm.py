@@ -36,8 +36,8 @@ import logging
 logging.basicConfig()
 
 # This is the main function which runs the swarm
-from HTMPkg import permutations_runner
-# from nupic.swarming import permutations_runner
+# from HTMPkg import permutations_runner
+from nupic.swarming import permutations_runner
 # imports the parameter variable from swarm_description
 from swarm_description import SWARM_DESCRIPTION
 

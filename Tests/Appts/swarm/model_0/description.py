@@ -35,7 +35,7 @@ from nupic.frameworks.opf.exp_description_helpers import importBaseDescription
 # the sub-experiment configuration
 config ={
   'aggregationInfo' : {'seconds': 0, 'fields': [], 'months': 0, 'days': 0, 'years': 0, 'hours': 0, 'microseconds': 0, 'weeks': 0, 'minutes': 0, 'milliseconds': 0},
-  'modelParams' : {'tmParams': {'minThreshold': 11, 'activationThreshold': 14, 'pamLength': 3}, 'sensorParams': {'encoders': {u'AGE_0_54': None, u'timestamp_weekend': {'name': 'timestamp', 'type': 'DateEncoder', 'fieldname': 'timestamp', 'weekend': (21, 1)}, u'DIST_0_30': None, u'MARRIED': None, u'timestamp_dayOfWeek': None, u'timestamp_timeOfDay': None, u'MALE': None, u'Ct': {'maxval': 1.0, 'name': 'Ct', 'clipInput': True, 'minval': 0, 'n': 36, 'fieldname': 'Ct', 'w': 21, 'type': 'ScalarEncoder'}}}, 'spParams': {'synPermInactiveDec': 0.05015}, 'clParams': {'alpha': 0.050050000000000004}},
+  'modelParams' : {'tmParams': {'minThreshold': 9, 'activationThreshold': 16, 'pamLength': 5}, 'sensorParams': {'encoders': {u'AGE_0_54': None, u'timestamp_weekend': {'name': 'timestamp', 'type': 'DateEncoder', 'fieldname': 'timestamp', 'weekend': (21, 1)}, u'DIST_0_30': {'maxval': 1.0, 'name': 'DIST_0_30', 'clipInput': True, 'minval': 0, 'n': 54, 'fieldname': 'DIST_0_30', 'w': 21, 'type': 'ScalarEncoder'}, u'MARRIED': None, u'timestamp_dayOfWeek': None, u'timestamp_timeOfDay': None, u'MALE': None, u'Ct': {'maxval': 1.0, 'name': 'Ct', 'clipInput': True, 'minval': 0, 'n': 41, 'fieldname': 'Ct', 'w': 21, 'type': 'ScalarEncoder'}}}, 'spParams': {'synPermInactiveDec': 0.06811521904926}, 'clParams': {'alpha': 0.04997538384508139}},
 
 }
 

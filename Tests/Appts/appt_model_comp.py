@@ -27,9 +27,9 @@ def MSE(Vals,Pred,WndwDys,DyStps):
 
 WndwDys = 30
 DyStps = 1
-PredAhead = 3
+PredAhead = 7
 
-InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_swarm_out.csv'
+InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_7steps_fac47_out.csv'
 appt_htm = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,1,2])
 appt_htm.index = pd.to_datetime(appt_htm.index, format = "%Y-%m-%d %H:%M:%S", errors = 'coerce') 
 appt_htm['MSE'] = MSE(appt_htm.Ct,appt_htm.prediction,WndwDys,DyStps)

@@ -29,8 +29,8 @@ _NUM_RECORDS = 3000
 _EXAMPLE_DIR = os.path.dirname(os.path.abspath(__file__))
 #_INPUT_FILE_PATH = os.path.join(_EXAMPLE_DIR, os.pardir, "data", "gymdata.csv")
 #_PARAMS_PATH = os.path.join(_EXAMPLE_DIR, os.pardir, "params", "model.yaml")
-_INPUT_FILE_PATH = os.path.join(_EXAMPLE_DIR, "data", "gymdata.csv")
-_PARAMS_PATH = os.path.join(_EXAMPLE_DIR, "params", "model.yaml")
+_INPUT_FILE_PATH = os.path.join(_EXAMPLE_DIR, "data", "pred_htm.csv")
+_PARAMS_PATH = os.path.join(_EXAMPLE_DIR, "params", "model_2var.yaml")
 _FILE_NAME = os.path.basename(os.path.splitext(_INPUT_FILE_PATH)[0])
 
 
@@ -48,10 +48,13 @@ def runHotgym(numRecords):
     weekend=enParams["timestamp_weekend"]["weekend"])
   scalarEncoder = RandomDistributedScalarEncoder(
     enParams["consumption"]["resolution"])
+  scalarEncoder2 = RandomDistributedScalarEncoder(
+    enParams["consumption2"]["resolution"])
 
   encodingWidth = (timeOfDayEncoder.getWidth()
                    + weekendEncoder.getWidth()
-                   + scalarEncoder.getWidth())
+                   + scalarEncoder.getWidth()
+                   + scalarEncoder2.getWidth())
 
   sp = SpatialPooler(
     inputDimensions=(encodingWidth,),
@@ -103,22 +106,25 @@ def runHotgym(numRecords):
       dateString = datetime.datetime.strptime(record[0], "%m/%d/%y %H:%M")
       # Convert data value string into float.
       prediction = float(record[1])
+      prediction2 = float(record[2])
 
       # To encode, we need to provide zero-filled numpy arrays for the encoders
       # to populate.
       timeOfDayBits = numpy.zeros(timeOfDayEncoder.getWidth())
       weekendBits = numpy.zeros(weekendEncoder.getWidth())
       consumptionBits = numpy.zeros(scalarEncoder.getWidth())
+      consumptionBits2 = numpy.zeros(scalarEncoder2.getWidth())
 
       # Now we call the encoders to create bit representations for each value.
       timeOfDayEncoder.encodeIntoArray(dateString, timeOfDayBits)
       weekendEncoder.encodeIntoArray(dateString, weekendBits)
       scalarEncoder.encodeIntoArray(prediction, consumptionBits)
+      scalarEncoder2.encodeIntoArray(prediction2, consumptionBits2)
 
       # Concatenate all these encodings into one large encoding for Spatial
       # Pooling.
       encoding = numpy.concatenate(
-        [timeOfDayBits, weekendBits, consumptionBits]
+        [timeOfDayBits, weekendBits, consumptionBits, consumptionBits2]
       )
 
       # Create an array to represent active columns, all initially zero. This

@@ -68,6 +68,12 @@ modelParams:
         resolution: 0.88
         seed: 1
         type: RandomDistributedScalarEncoder
+      consumption2:
+        fieldname: consumption2
+        name: consumption2
+        resolution: 0.88
+        seed: 1
+        type: RandomDistributedScalarEncoder
       timestamp_timeOfDay:
         fieldname: timestamp
         name: timestamp_timeOfDay
@@ -296,7 +302,7 @@ modelParams:
 
     # This is set after the call to updateConfigFromSubConfig and is
     # computed from the aggregationInfo and predictAheadTime.
-    steps: 10 
+    steps: '1,5'
     #'1,5'
 
     # maxCategoryCount reprensents the max number of categories / bucket indices

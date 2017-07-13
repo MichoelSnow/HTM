@@ -49,7 +49,7 @@ appt_htm.to_csv("E:\\MyDocuments\\GitHub\\HTM\\Tests\\Appts\\appt_htm_%ssteps.cs
 appt = pd.read_csv('E:\\MyDocuments\\HospAgg\\Appts\\appt_D_2007_2015_zip_dept_age_dist.csv',na_values="")
 appt.APPOINTMENTDATETIME = pd.to_datetime(appt.APPOINTMENTDATETIME, format = "%Y-%m-%d %H:%M:%S", errors = 'coerce')
 
-steps = 0
+steps = 1
 appt.rename(inplace = True, columns = {"APPOINTMENTDATETIME":"timestamp","SHOW":"Ct"})
 cols = appt.columns
 var_dict = dict()

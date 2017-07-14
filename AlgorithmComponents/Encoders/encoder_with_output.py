@@ -10,10 +10,10 @@ from nupic.encoders.random_distributed_scalar import \
     RandomDistributedScalarEncoder
 #from nupic.encoders.scalar import ScalarEncoder
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 #from datetime import datetime
-import numpy
-numpy.set_printoptions(threshold=numpy.nan)
+import numpy as np
+np.set_printoptions(threshold=np.nan)
 import pandas as pd
 
 
@@ -66,16 +66,20 @@ def value_encoder(data_fl,encoder_list,enc_sz):
                     enc_array += [encoder_list[jpos][k].encode(data_fl[j][i])]
             elif data_fl[j].dtype == "float":
                 enc_array += [encoder_list[jpos][0].encode(data_fl[j][i])]
-        encoding += [numpy.concatenate(enc_array)]
+        encoding += [np.concatenate(enc_array)]
     return encoding
 
-# %%
-file_name = "E:\\MyDocuments\\GitHub\\HTM\\AlgorithmComponents\\Data\\appt_htm_0steps.csv"
-data_fl = organize_data(file_name)
-encoder_list = smart_encode(data_fl)
-encoding = value_encoder(data_fl,encoder_list,100)
+def create_encoding(file_name):
+    data_fl = organize_data(file_name)
+    encoder_list = smart_encode(data_fl)
+    encoding = value_encoder(data_fl,encoder_list,len(data_fl))
+    return encoding
 
-# %%
-plt.imshow(numpy.reshape(encoding[5][:240],(15,16)))
+#file_name = "E:\\MyDocuments\\GitHub\\HTM\\AlgorithmComponents\\Data\\appt_htm_0steps.csv"
+#output_name = "E:\\MyDocuments\\GitHub\\HTM\\AlgorithmComponents\\Data\\appt_htm_0steps_encoded.npy"
+
+
+
+#plt.imshow(numpy.reshape(encoding[5][:240],(15,16)))
 
 

@@ -111,6 +111,7 @@ def smart_encode2(data_fl):
 
 def create_sp(encoder_width):
     sp = SpatialPooler(
+      potentialRadius=encoder_width,      
       # How large the input encoding will be.
       inputDimensions=(encoder_width),
       # How many mini-columns will be in the Spatial Pooler.
@@ -135,7 +136,7 @@ def create_sp(encoder_width):
       seed=1956,
       # Determines if inputs at the beginning and end of an input dimension 
       # should be considered neighbors when mapping columns to inputs.
-      wrapAround=False)        
+      wrapAround=True)        
     return sp    
     
 
@@ -164,9 +165,10 @@ def create_tm():
     return tm
 
 
-
+# %%
 file_name = "E:\\MyDocuments\\GitHub\\HTM\\AlgorithmComponents\\Data\\appt_htm_0steps.csv"
-file_name = "E:\\MyDocuments\\GitHub\\HTM\\AlgorithmComponents\\Data\\gymdata.csv"
+
+#file_name = "E:\\MyDocuments\\GitHub\\HTM\\AlgorithmComponents\\Data\\gymdata.csv"
 data_fl = organize_data(file_name)    
 encoder_list, encoder_width = smart_encode2(data_fl)   
 sp = create_sp(encoder_width) 
@@ -174,7 +176,8 @@ tm = create_tm()
 classifier = SDRClassifierFactory.create()
 encoded_data, sp_output, tm_output = [], [], []
 prediction, confidence = [],[]
-for i in xrange(1):#xrange(len(data_fl)):
+results = []
+for i in xrange(200):#xrange(len(data_fl)):
     enc_array = []
     for count,record in enumerate(data_fl.columns):
         if data_fl[record].dtype == 'M8[ns]':
@@ -208,7 +211,7 @@ for i in xrange(1):#xrange(len(data_fl)):
       classification={
         "bucketIdx": bucketIdx,
 #        "actValue": data_fl.Ct[i]
-        "actValue": data_fl.iloc[i,1]
+        "actValue": float(data_fl.iloc[i,1])
       },
       learn=True,
       infer=True
@@ -221,15 +224,13 @@ for i in xrange(1):#xrange(len(data_fl)):
     )[0]
     prediction += [value]
     confidence += [probability*100]
-    
+    results.append([data_fl.iloc[i,0].strftime('%m/%d/%Y %H:%M'), float(np.round(data_fl.iloc[i,1],3)), float(np.round(value,3)), probability*100])
+
+
     
 
 
   
-    
-    
-    
-    
     
     
     

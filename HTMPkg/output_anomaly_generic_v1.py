@@ -25,7 +25,7 @@ models.
 """
 import csv
 from abc import ABCMeta, abstractmethod
-from nupic.algorithms import anomaly_likelihood
+#from nupic.algorithms import anomaly_likelihood
 
 
 class NuPICOutput(object):

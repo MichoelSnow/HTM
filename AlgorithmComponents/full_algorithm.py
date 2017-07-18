@@ -11,7 +11,7 @@ from nupic.encoders.random_distributed_scalar import \
 from nupic.algorithms.spatial_pooler import SpatialPooler
 from nupic.algorithms.temporal_memory import TemporalMemory
 from nupic.algorithms.sdr_classifier_factory import SDRClassifierFactory
-    
+from HTMPkg import output_anomaly_generic_v1    
 #from nupic.encoders.scalar import ScalarEncoder
 
 #import matplotlib.pyplot as plt
@@ -71,30 +71,30 @@ def smart_encode(data_fl):
             encoder_width += sum(x.getWidth() for x in encoder_list[-1])
     return encoder_list, encoder_width
 
-def smart_encode2(data_fl):
-    encoder_list = []
-    encoder_width = 0
-    for i in data_fl.columns:        
-        if data_fl[i].dtype == 'M8[ns]':
-            time_delta = data_fl[i][1] - data_fl[i][0]
-            if  time_delta >= pd.Timedelta(1,unit='M'):
-                encoder_list += [[DateEncoder(season=21)]]
-                encoder_width += sum(x.getWidth() for x in encoder_list[-1])
-            elif time_delta >= pd.Timedelta(1,unit='D'):
-                encoder_list += [[DateEncoder(season=(21)),
-                                  DateEncoder(dayOfWeek=(21,1)),
-                                  DateEncoder(weekend=5)]]
-                encoder_width += sum(x.getWidth() for x in encoder_list[-1])
-            else:                
-                encoder_list += [[DateEncoder(timeOfDay=(21,1)),
-                                  DateEncoder(weekend=21)]]
-                encoder_width += sum(x.getWidth() for x in encoder_list[-1])
-        if data_fl[i].dtype == "float":
-            col_range = data_fl[i].max() - data_fl[i].min()
-            res = col_range/(400-21)
-            encoder_list += [[RandomDistributedScalarEncoder(0.88)]]
-            encoder_width += sum(x.getWidth() for x in encoder_list[-1])
-    return encoder_list, encoder_width
+#def smart_encode2(data_fl):
+#    encoder_list = []
+#    encoder_width = 0
+#    for i in data_fl.columns:        
+#        if data_fl[i].dtype == 'M8[ns]':
+#            time_delta = data_fl[i][1] - data_fl[i][0]
+#            if  time_delta >= pd.Timedelta(1,unit='M'):
+#                encoder_list += [[DateEncoder(season=21)]]
+#                encoder_width += sum(x.getWidth() for x in encoder_list[-1])
+#            elif time_delta >= pd.Timedelta(1,unit='D'):
+#                encoder_list += [[DateEncoder(season=(21)),
+#                                  DateEncoder(dayOfWeek=(21,1)),
+#                                  DateEncoder(weekend=5)]]
+#                encoder_width += sum(x.getWidth() for x in encoder_list[-1])
+#            else:                
+#                encoder_list += [[DateEncoder(timeOfDay=(21,1)),
+#                                  DateEncoder(weekend=21)]]
+#                encoder_width += sum(x.getWidth() for x in encoder_list[-1])
+#        if data_fl[i].dtype == "float":
+#            col_range = data_fl[i].max() - data_fl[i].min()
+#            res = col_range/(400-21)
+#            encoder_list += [[RandomDistributedScalarEncoder(0.88)]]
+#            encoder_width += sum(x.getWidth() for x in encoder_list[-1])
+#    return encoder_list, encoder_width
                             
 #def value_encoder(data_fl,encoder_list,enc_sz):
 #    encoding = []
@@ -167,17 +167,17 @@ def create_tm():
 
 # %%
 file_name = "E:\\MyDocuments\\GitHub\\HTM\\AlgorithmComponents\\Data\\appt_htm_0steps.csv"
-
 #file_name = "E:\\MyDocuments\\GitHub\\HTM\\AlgorithmComponents\\Data\\gymdata.csv"
 data_fl = organize_data(file_name)    
-encoder_list, encoder_width = smart_encode2(data_fl)   
+encoder_list, encoder_width = smart_encode(data_fl)   
 sp = create_sp(encoder_width) 
 tm = create_tm()
 classifier = SDRClassifierFactory.create()
 encoded_data, sp_output, tm_output = [], [], []
 prediction, confidence = [],[]
 results = []
-for i in xrange(200):#xrange(len(data_fl)):
+output = output_anomaly_generic_v1.NuPICFileOutput(file_name)
+for i in xrange(len(data_fl)):
     enc_array = []
     for count,record in enumerate(data_fl.columns):
         if data_fl[record].dtype == 'M8[ns]':
@@ -225,9 +225,9 @@ for i in xrange(200):#xrange(len(data_fl)):
     prediction += [value]
     confidence += [probability*100]
     results.append([data_fl.iloc[i,0].strftime('%m/%d/%Y %H:%M'), float(np.round(data_fl.iloc[i,1],3)), float(np.round(value,3)), probability*100])
+    output.write(data_fl.iloc[i,0], float(np.round(data_fl.iloc[i,1],3)), float(np.round(value,3)), probability*100)
 
-
-    
+output.close()    
 
 
   

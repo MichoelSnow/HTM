@@ -67,6 +67,7 @@ appt_mse['AR'] = appt_ar.MSE
 appt['dates'] = [date2num(date) for date in appt.index]
 appt_mse['dates'] = [date2num(date) for date in appt_mse.index]
 gs = gridspec.GridSpec(2,1, height_ratios=[3, 1]) 
+plt.figure(figsize=(10,5))
 ax0 = plt.subplot(gs[0])
 ax1 = plt.subplot(gs[1], sharex=ax0)
 ax0.set_prop_cycle('color',['b', 'orange','g','r'])
@@ -86,11 +87,11 @@ AnomalyGraph.legend(tuple(['Rolling Mean','HTM','Auto Regression']), loc=1)
 
 
 # %%
-InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_out - Copy.csv'
-appt_htm1 = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,2])
-InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_out.csv'
-appt_htm2 = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,2])
-appt_htm2['pred20'] = appt_htm1.prediction
+#InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_out - Copy.csv'
+#appt_htm1 = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,2])
+#InputName = 'E:\\MyDocuments\\GitHub\\HTM\\Tests\\appts\\appt_htm_3steps_out.csv'
+#appt_htm2 = pd.read_csv(InputName, na_values="",index_col=0,usecols=[0,2])
+#appt_htm2['pred20'] = appt_htm1.prediction
 
 
 
